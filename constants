@@ -1,0 +1,36 @@
+# An example of a user defined constants file, which would be copied to
+#  ~/.ProgAndSciCalc/constants
+# (see Help->Instructions within the program)
+#
+#
+[Scientific]
+Speed of light in free space m/s=299792458
+Planck constant J.s=6.62607004e-34
+Elementary charge C=1.6021766208e-19
+Boltzmann constant J/K=1.38064852e-23
+Gravitational constant m³/kg.s²=6.67408e-11
+Standard gravity m/s²=9.80665
+Atomic mass constant kg=1.66053904e-27
+Avogadro constant /mol=6.022140857e23
+Molar gas constant J/mol.K=8.3144598
+
+[Test Group 1]
+Example 1=1
+Example 2=2
+Example 3=3
+Example 4=4
+Example 5=5
+Example 6=6
+Example 7=7
+Example 8=8
+Example 9=9
+Example 10=10
+Example 11=11
+Example 12=12
+Example 13=13
+Example 14=14
+Example 15=15
+
+#[Test Group 2]
+#[Test Group 3]
+#[Test Group 4]
