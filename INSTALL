@@ -1,0 +1,20 @@
+Currently the program must be built from source, so assume a working gcc C compiler/toolchain.
+
+cd into the src directory.
+There is a simple but functional Makefile.
+Just run 'make' (without the quotes of course) from within the src directory.
+It should build without warnings.
+
+The build artefacts, including the executable 'progandscicalc', will be placed under a dir called 'build'
+ie. after running 'make' you will find the executable under
+  src/build/progandscicalc
+The executable can then be copied to wherever you want.
+
+Running 'make clean' will remove all build artefacts.
+
+
+Dependencies
+============
+Requires GTK2 libraries, including the gtk2 dev lib (on xubuntu system
+this was package libgtk2.0-dev).
+

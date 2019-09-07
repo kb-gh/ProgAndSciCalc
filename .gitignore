@@ -1,5 +1,3 @@
 *.swp
 cscope.out
 build/
-COPYING
-INSTALL
