@@ -1,6 +1,8 @@
 # ProgAndSciCalc
 <pre>
-dual mode (programmer and scientific) calculator
+Dual mode calculator, Integer (Programmer) mode, and Floating (Scientific) mode.
+Written in C. Uses GTK2 for GUI.
+
 MODE
 Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.
            The main display can be decimal or hex, the value is also shown in binary
