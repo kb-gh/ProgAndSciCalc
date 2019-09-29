@@ -177,10 +177,10 @@ Pasted value is converted according to the current mode, and for Integer mode,
 according to whether display is set as DEC or HEX.
 </pre>
 
-![scientific](https://github.com/kb-gh/ProgAndSciCalc/screenshots/sci.png)
+![](screenshots/sci.png)
 
-![unit-conversion-example](https://github.com/kb-gh/ProgAndSciCalc/screenshots/unit-conv.png)
+![](screenshots/unit-conv.png)
 
-![programmer-dec](https://github.com/kb-gh/ProgAndSciCalc/screenshots/int-dec.png)
+![](screenshots/int-dec.png)
 
-![programmer-hex](https://github.com/kb-gh/ProgAndSciCalc/screenshots/int-hex.png)
+![](screenshots/int-hex.png)
