@@ -37,4 +37,5 @@ typedef enum
 void gui_init(int debug_lvl, float_digits_enum fd);
 void gui_create(void);
 
+void gui_give_arg_if_pending(void);
 #endif

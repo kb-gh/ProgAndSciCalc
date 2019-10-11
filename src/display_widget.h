@@ -22,6 +22,8 @@
 #define DISPLAY_WIDGET_H
 
 #include <gtk/gtk.h>
+#include "calc.h"
+
 
 
 GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg);
@@ -29,7 +31,7 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg);
 /* set text on the main display */
 void display_widget_main_set_text(const char *msg);
 
-/* set text on the secondary binary display */
-void display_widget_bin_set_text(const char *msg);
+/* set value on the binary display */
+void display_widget_bin_set_val(uint64_t ival, calc_width_enum width);
 
 #endif

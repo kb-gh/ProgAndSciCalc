@@ -199,6 +199,8 @@ bool calc_get_warn_on_signed_overflow(void);
 void calc_set_warn_on_unsigned_overflow(bool en);
 bool calc_get_warn_on_unsigned_overflow(void);
 
+/* special case for toggling bits in the binary display */
+void calc_binary_bit_xor(uint64_t bitmask);
 
 /* Interpret str as a signed decimal integer (note result returned as uint64).
  * Return true if the value is in range of the width, with the value

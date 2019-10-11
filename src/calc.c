@@ -1307,3 +1307,28 @@ bool calc_get_warn_on_unsigned_overflow(void)
 {
     return warn_on_unsigned_overflow;
 }
+
+/* Handle this as a special case. Makes most sense to actually treat it like
+ * a unary op rather than normal binary xor op. */
+void calc_binary_bit_xor(uint64_t bitmask)
+{
+    if (calc_mode != calc_mode_integer)
+        return;
+
+    /* see unary_op function */
+
+    uint64_t iresult;
+    stackf_t fresult;
+    stack_el_t arg;
+
+    arg = stack_pop();
+    if (stack_num_args() < bop_stack_num_args())
+    {
+        stack_push(arg.ival, arg.fval);
+    }
+
+    iresult = bin_iop_xor(arg.ival, bitmask);
+    dfp_zero(&fresult);
+    stack_push(iresult, fresult);
+    request_display_update(stack_peek());
+}

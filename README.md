@@ -6,7 +6,9 @@ Written in C. Uses GTK2 for GUI.
 MODE
 Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.
            The main display can be decimal or hex, the value is also shown in binary
-           under the main display.
+           under the main display. (The binary display is interactive ie. you can click
+           on an individual bit to toggle that bit).
+
 Floating - uses decQuad decimal floating point type (34 digits internally). The main display
            can be configured to use from 8 to 20 digits (20 is chosen as the max because
            it's plenty, and 20 is sufficient to precisely represent all integers in the

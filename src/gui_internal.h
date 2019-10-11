@@ -40,8 +40,6 @@ void help_menu_add(GtkWidget *menubar);
 void conversion_menu_add(GtkWidget *menubar);
 void constants_menu_add(GtkWidget *menubar);
 
-void gui_give_arg_if_pending(void);
-
 void gui_menu_constants_init(void);
 void gui_menu_constants_deinit(void);
 

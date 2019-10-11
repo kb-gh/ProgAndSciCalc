@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "1.0"
+#define VERSION "2.0"
 
 extern GtkWidget *window_main;
 
@@ -29,7 +29,8 @@ static const char *instructions[] =
 "MODE\n"
 "Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.\n"
 "           The main display can be decimal or hex, the value is also shown in binary\n"
-"           under the main display.\n"
+"           under the main display. (The binary display is interactive ie. you can click\n"
+"           on an individual bit to toggle that bit).\n"
 "Floating - uses decQuad decimal floating point type (34 digits internally). The main display\n"
 "           can be configured to use from 8 to 20 digits (20 is chosen as the max because\n"
 "           it's plenty, and 20 is sufficient to precisely represent all integers in the\n"

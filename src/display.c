@@ -59,15 +59,6 @@ static int disp_stack_index;
 /* are we in exponent entry mode */
 static bool disp_exp_entry;
 
-/* Details for the seconadry display showing value in binary */
-/* 64 bit numbers */
-#define MAX_BIN_BYTES 8
-#define MAX_BIN_CHARS (MAX_BIN_BYTES * 8)
-/* 7 spaces (in between 8 groups of 8) */
-#define MAX_BIN_CHARS_PLUS_SPACES (MAX_BIN_CHARS + 7)
-/* 1 for null termination */
-#define MAX_BIN_CHARS_PLUS_SPACES_PLUS_NULL (MAX_BIN_CHARS_PLUS_SPACES + 1)
-static char bin_disp_str_spaced[MAX_BIN_CHARS_PLUS_SPACES_PLUS_NULL];
 
 /* used to construct display when hex grouping is enabled,
  * +1 for null termination */
@@ -165,64 +156,6 @@ static char disp_stack_pop(void)
     }
 }
 
-static void set_bin_display(calc_width_enum width)
-{
-    uint64_t uval;
-    char *p;
-    int bytes;
-    int unused_bytes;
-
-    if (width == calc_width_8)
-        bytes = 1;
-    else if (width == calc_width_16)
-        bytes = 2;
-    else if (width == calc_width_32)
-        bytes = 4;
-    else
-        bytes = 8;
-
-    unused_bytes = MAX_BIN_BYTES - bytes;
-
-    uval = disp_ival;
-    /* fill in 1s and 0s working backwards */
-    p = bin_disp_str_spaced + MAX_BIN_CHARS_PLUS_SPACES_PLUS_NULL;
-    for (int i = 0; i < bytes; i++)
-    {
-        if (i == 0)
-        {
-            /* null terminate */
-            *--p = 0;
-        }
-        else
-        {
-            /* add space between groups of 8 */
-            *--p = ' ';
-        }
-        for (int j = 0; j < 8; j++)
-        {
-            int digit = uval & 1;
-            *--p = digit + '0';
-            uval >>= 1;
-        }
-    }
-    for (int i = 0; i < unused_bytes; i++)
-    {
-        /* add space between groups of 8 */
-        *--p = ' ';
-        for (int j = 0; j < 8; j++)
-        {
-            /* whatever character you want to use to represent unused bit */
-            *--p = ' ';
-        }
-    }
-    /* sanity check */
-    if (uval != 0 || p != bin_disp_str_spaced)
-    {
-        disp_error("display width mask error");
-    }
-
-    display_widget_bin_set_text(bin_disp_str_spaced);
-}
 
 /* Adjusts the display based on hex grouping if in integer/hex mode.
  * grouping assumed to be either 4 or 8 only. */
@@ -339,7 +272,7 @@ static bool update_display()
             }
         }
 
-        set_bin_display(width);
+        display_widget_bin_set_val(disp_ival, width);
     }
 
     /* allow for hex grouping */
