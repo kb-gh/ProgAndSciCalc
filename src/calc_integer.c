@@ -39,7 +39,7 @@
 
 static const char *signed_overflow_msg = "Signed Integer Overflow";
 static const char *unsigned_overflow_msg = "Unsigned Integer Overflow";
-static const char *input_range_msg = "Input Out of Range";
+static const char *shift_range_msg = "Shift Out of Range";
 static const char *div0_msg = "Divide by 0";
 
 static void calc_signed_overflow_warn(void)
@@ -648,7 +648,7 @@ uint64_t bin_iop_or(uint64_t a, uint64_t b)
     uint64_t res;
     calc_width_enum width = calc_get_integer_width();
 
-    return a | b;
+    res = a | b;
 
     DBGP(("op res before %016" PRIx64 "\n", res));
     calc_util_mask_width(&res, width);
@@ -661,7 +661,7 @@ uint64_t bin_iop_xor(uint64_t a, uint64_t b)
     uint64_t res;
     calc_width_enum width = calc_get_integer_width();
 
-    return a ^ b;
+    res = a ^ b;
 
     DBGP(("op res before %016" PRIx64 "\n", res));
     calc_util_mask_width(&res, width);
@@ -676,7 +676,7 @@ uint64_t bin_iop_left_shift(uint64_t a, uint64_t b)
 
     if (!is_shift_valid(b, width))
     {
-        calc_warn(input_range_msg);
+        calc_warn(shift_range_msg);
         return a;
     }
     res = a << b;
@@ -694,7 +694,7 @@ uint64_t bin_iop_right_shift(uint64_t a, uint64_t b)
 
     if (!is_shift_valid(b, width))
     {
-        calc_warn(input_range_msg);
+        calc_warn(shift_range_msg);
         return a;
     }
     if (calc_get_use_unsigned())
