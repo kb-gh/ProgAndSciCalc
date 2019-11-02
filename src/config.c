@@ -24,7 +24,7 @@
 #include "config.h"
 
 /* startup in either floating or integer mode */
-calc_mode_enum calc_mode;
+static calc_mode_enum calc_mode;
 
 /* 0, 4, or 8 */
 static int hex_grouping;
@@ -50,10 +50,10 @@ static float_digits_enum float_digits;
 static calc_width_enum integer_width;
 
 /* use signed/unsigned type at startup */
-bool use_unsigned;
+static bool use_unsigned;
 
-bool warn_on_signed_overflow;
-bool warn_on_unsigned_overflow;
+static bool warn_on_signed_overflow;
+static bool warn_on_unsigned_overflow;
 
 static const char *CALCDIR = ".ProgAndSciCalc";
 static const char *CONFIGFILE = "config";
