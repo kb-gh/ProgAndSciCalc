@@ -329,6 +329,7 @@ static bool digit_entered(const button_info *binfo)
     if (!arg_pending)
     {
         /* start a new argument */
+        last_float_format = disp_float_gmode;
         display_set_text(binfo->name);
         arg_pending = true;
         gtk_widget_set_sensitive(but_backspace, TRUE);
@@ -363,6 +364,7 @@ static void enter_point(void)
 
     if (!arg_pending)
     {
+        last_float_format = disp_float_gmode;
         display_set_text("0.");
         arg_pending = true;
         gtk_widget_set_sensitive(but_backspace, TRUE);
