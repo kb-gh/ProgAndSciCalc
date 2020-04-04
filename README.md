@@ -115,6 +115,12 @@ Some of the more common functions are mapped to keyboard shortcuts, case insensi
    F-E                     f
   HIST                     h
    ()                  themselves
+ unsigned                  u
+  signed                   s
+ width 8                 ctrl-1
+ width 16                ctrl-2
+ width 32                ctrl-3
+ width 64                ctrl-4
 It is possible to access other buttons from keyboard by using cursor keys to highlight
 the chosen button then pressing SPACEBAR.
 

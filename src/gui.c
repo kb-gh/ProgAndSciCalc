@@ -131,12 +131,82 @@ typedef enum
 
 } button_id_enum;
 
+
+/* Info for number of float digits radio buttons */
+typedef struct
+{
+    char *name;
+    float_digits_enum id;
+} FLOAT_DIGITS_RB;
+static const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
+{
+    { "8",  FLOAT_DIGITS_8_ID },
+    { "10", FLOAT_DIGITS_10_ID },
+    { "12", FLOAT_DIGITS_12_ID },
+    { "14", FLOAT_DIGITS_14_ID },
+    { "16", FLOAT_DIGITS_16_ID },
+    { "18", FLOAT_DIGITS_18_ID },
+    { "20", FLOAT_DIGITS_20_ID },
+};
+static int float_digits_from_id(float_digits_enum fd)
+{
+    switch (fd)
+    {
+    case FLOAT_DIGITS_8_ID:
+        return 8;
+    case FLOAT_DIGITS_10_ID:
+        return 10;
+    case FLOAT_DIGITS_12_ID:
+        return 12;
+    case FLOAT_DIGITS_14_ID:
+        return 14;
+    case FLOAT_DIGITS_16_ID:
+        return 16;
+    case FLOAT_DIGITS_18_ID:
+        return 18;
+    default:
+        return 20;
+    }
+}
+
+/* Info for integer width and signed/unsigned radio buttons */
+typedef struct
+{
+    char *name;
+    calc_width_enum id;
+} INT_WIDTH_RB;
+static const INT_WIDTH_RB int_width_rb[num_calc_widths] =
+{
+    { "8",  calc_width_8 },
+    { "16", calc_width_16 },
+    { "32", calc_width_32 },
+    { "64", calc_width_64 },
+};
+
+typedef struct
+{
+    char *name;
+    int id;
+} INT_SIGNED_RB;
+#define INT_USE_SIGNED_ID 0
+#define INT_USE_UNSIGNED_ID 1
+#define NUM_INT_SIGNED_RB 2
+static const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB] =
+{
+    { "signed", INT_USE_SIGNED_ID },
+    { "unsigned", INT_USE_UNSIGNED_ID },
+};
+
+
+
 /* Any widgets that need to be remembered */
 static GtkWidget *lbl_status;
 static GtkWidget *lbl_mem;
 static GtkWidget *lbl_pending_bin_op;
 static GtkWidget *but_backspace;
 static GtkWidget *but_grid[bid_num_displayable];
+static GtkWidget *rbut_int_width[num_calc_widths];
+static GtkWidget *rbut_int_signed[NUM_INT_SIGNED_RB];
 /* Used when creating the button grid, for either deg/rad/grad or dec/hex */
 static GSList *rb_list_grid;
 
@@ -258,70 +328,6 @@ static const button_info binfo_right_int[BT_ROWS][BT_COLS] =
 /* Normally this will get initialised from config */
 static float_digits_enum float_digits_id = FLOAT_DIGITS_10_ID;
 
-/* Info for number of float digits radio buttons */
-typedef struct
-{
-    char *name;
-    float_digits_enum id;
-} FLOAT_DIGITS_RB;
-static const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
-{
-    { "8",  FLOAT_DIGITS_8_ID },
-    { "10", FLOAT_DIGITS_10_ID },
-    { "12", FLOAT_DIGITS_12_ID },
-    { "14", FLOAT_DIGITS_14_ID },
-    { "16", FLOAT_DIGITS_16_ID },
-    { "18", FLOAT_DIGITS_18_ID },
-    { "20", FLOAT_DIGITS_20_ID },
-};
-static int float_digits_from_id(float_digits_enum fd)
-{
-    switch (fd)
-    {
-    case FLOAT_DIGITS_8_ID:
-        return 8;
-    case FLOAT_DIGITS_10_ID:
-        return 10;
-    case FLOAT_DIGITS_12_ID:
-        return 12;
-    case FLOAT_DIGITS_14_ID:
-        return 14;
-    case FLOAT_DIGITS_16_ID:
-        return 16;
-    case FLOAT_DIGITS_18_ID:
-        return 18;
-    default:
-        return 20;
-    }
-}
-
-/* Info for integer width and signed/unsigned radio buttons */
-typedef struct
-{
-    char *name;
-    calc_width_enum id;
-} INT_WIDTH_RB;
-static const INT_WIDTH_RB int_width_rb[num_calc_widths] =
-{
-    { "8",  calc_width_8 },
-    { "16", calc_width_16 },
-    { "32", calc_width_32 },
-    { "64", calc_width_64 },
-};
-
-typedef struct
-{
-    char *name;
-    int id;
-} INT_SIGNED_RB;
-#define INT_USE_SIGNED_ID 0
-#define INT_USE_UNSIGNED_ID 1
-#define NUM_INT_SIGNED_RB 2
-static const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB] =
-{
-    { "signed", INT_USE_SIGNED_ID },
-    { "unsigned", INT_USE_UNSIGNED_ID },
-};
 
 /* helper function when entering digits */
 static bool digit_entered(const button_info *binfo)
@@ -909,15 +915,35 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             return key_click_any_mode(but_grid[bid_0]);
         case '1':
         case NUM_KEYPAD_1:
+            if (event->state & CTRL_MASK)
+            {
+                /* 8 bit */
+                return key_click_if_integer_mode(rbut_int_width[0]);
+            }
             return key_click_any_mode(but_grid[bid_1]);
         case '2':
         case NUM_KEYPAD_2:
+            if (event->state & CTRL_MASK)
+            {
+                /* 16 bit */
+                return key_click_if_integer_mode(rbut_int_width[1]);
+            }
             return key_click_any_mode(but_grid[bid_2]);
         case '3':
         case NUM_KEYPAD_3:
+            if (event->state & CTRL_MASK)
+            {
+                /* 32 bit */
+                return key_click_if_integer_mode(rbut_int_width[2]);
+            }
             return key_click_any_mode(but_grid[bid_3]);
         case '4':
         case NUM_KEYPAD_4:
+            if (event->state & CTRL_MASK)
+            {
+                /* 64 bit */
+                return key_click_if_integer_mode(rbut_int_width[3]);
+            }
             return key_click_any_mode(but_grid[bid_4]);
         case '5':
         case NUM_KEYPAD_5:
@@ -1040,6 +1066,13 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
                 return FALSE;
             }
 
+        case 's':
+        case 'S':
+            return key_click_if_integer_mode(rbut_int_signed[INT_USE_SIGNED_ID]);
+        case 'u':
+        case 'U':
+            return key_click_if_integer_mode(rbut_int_signed[INT_USE_UNSIGNED_ID]);
+
         case ESC_KEY:
         case DELETE_KEY:
             return key_click_any_mode(but_grid[bid_clr]);
@@ -1160,6 +1193,7 @@ static void add_integer_width_rb(GtkWidget *hbox)
                          (gpointer)&int_width_rb[i]);
         gtk_widget_show(button);
         gtk_box_pack_start(GTK_BOX(hbox_w), button, FALSE, FALSE, 6);
+        rbut_int_width[i] = button;
     }
 
     group = NULL;
@@ -1186,6 +1220,7 @@ static void add_integer_width_rb(GtkWidget *hbox)
                          (gpointer)&int_signed_rb[i]);
         gtk_widget_show(button);
         gtk_box_pack_start(GTK_BOX(hbox_su), button, FALSE, FALSE, 10);
+        rbut_int_signed[i] = button;
     }
     gtk_box_pack_start(GTK_BOX(hbox), align, TRUE, TRUE, 0);
 }
@@ -1262,6 +1297,21 @@ static void gui_recreate(void)
         but_grid[i] = NULL;
     }
     rb_list_grid = NULL;
+
+    /* and wouldn't hurt to NULL these */
+    lbl_status = NULL;
+    lbl_mem = NULL;
+    lbl_pending_bin_op = NULL;
+    but_backspace = NULL;
+    for (int i = 0; i < num_calc_widths; i++)
+    {
+        rbut_int_width[i] = NULL;
+    }
+    for (int i = 0; i < NUM_INT_SIGNED_RB; i++)
+    {
+        rbut_int_signed[i] = NULL;
+    }
+
     gui_created = false;
 
     /* Outer vbox */

@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.1"
+#define VERSION "2.2"
 
 extern GtkWidget *window_main;
 
@@ -129,7 +129,13 @@ static const char *instructions[] =
 "   INV                     i\n"
 "   F-E                     f\n"
 "  HIST                     h\n"
-"   ()                  themselves\n\n"
+"   ()                  themselves\n"
+" unsigned                  u\n"
+"  signed                   s\n"
+" width 8                 ctrl-1\n"
+" width 16                ctrl-2\n"
+" width 32                ctrl-3\n"
+" width 64                ctrl-4\n\n"
 "It is possible to access other buttons from keyboard by using cursor keys to highlight\n"
 "the chosen button then pressing SPACEBAR.",
 
