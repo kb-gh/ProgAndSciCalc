@@ -278,12 +278,12 @@ static bool range_test_add64(int64_t a, int64_t b)
 {
     bool ok = true;
 
-    if (a > 0 && b > 0)
+    if (b > 0)
     {
         if (a > INT64_MAX - b)
             ok = false;
     }
-    else if (a < 0 && b < 0)
+    else
     {
         if (a < INT64_MIN - b)
             ok = false;
@@ -352,14 +352,14 @@ static bool range_test_sub64(int64_t a, int64_t b)
 {
     bool ok = true;
 
-    if (a > 0 && b < 0)
-    {
-        if (a > INT64_MAX + b)
-            ok = false;
-    }
-    else if (a < 0 && b > 0)
+    if (b > 0)
     {
         if (a < INT64_MIN + b)
+            ok = false;
+    }
+    else
+    {
+        if (a > INT64_MAX + b)
             ok = false;
     }
 
