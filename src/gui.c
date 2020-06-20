@@ -1782,6 +1782,35 @@ void gui_give_arg_if_pending(void)
     give_arg_if_pending();
 }
 
+
+/* Strip leading whitespace and terminate at first non valid character, this will
+ * give more chance that the pasted text will be acceptable to dfp_from_string */
+static char *massage_float_txt(char *buf)
+{
+    /* strip leading whitespace */
+    char *p = buf;
+    while (*p != '\0' && *p <= ' ')
+    {
+        p++;
+    }
+    char *start = p;
+
+    /* terminate at first non valid character */
+    const char *valid = "0123456789.+-eE";
+    while (*p != '\0')
+    {
+        if (!strchr(valid, *p))
+        {
+            *p = '\0';
+            break;
+        }
+        p++;
+    }
+
+    return start;
+}
+
+
 static void clipboard_copy(void)
 {
     /* write to both default and primary seems to cover most possibilities */
@@ -1824,8 +1853,12 @@ static void clipboard_paste_callback(GtkClipboard *clipboard, const gchar *text,
         }
         else
         {
+            /* dfp_from_string isn't very forgiving so pre process the text */
+            char temp[DFP_STRING_MAX];
+            temp[0] = '\0';
+            strncat(temp, text, DFP_STRING_MAX-1);
             stackf_t fval;
-            dfp_from_string(&fval, text, &dfp_context);
+            dfp_from_string(&fval, massage_float_txt(temp), &dfp_context);
             calc_give_arg(0, fval);
             calc_give_op(cop_peek);
         }
