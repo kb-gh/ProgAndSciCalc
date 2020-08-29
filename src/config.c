@@ -55,6 +55,11 @@ static bool use_unsigned;
 static bool warn_on_signed_overflow;
 static bool warn_on_unsigned_overflow;
 
+/* if you don't like the zero character in monospace font used for main
+ * and binary displays, try using capital O instead */
+static bool replace_zero_with_o;
+
+
 static const char *CALCDIR = ".ProgAndSciCalc";
 static const char *CONFIGFILE = "config";
 static const char *SETTINGS = "Settings";
@@ -71,6 +76,7 @@ static const char *INTEGER_WIDTH = "IntegerWidth";
 static const char *USE_UNSIGNED = "UseUnsigned";
 static const char *WARN_SIGNED_OVERFLOW = "WarnSignedOverflow";
 static const char *WARN_UNSIGNED_OVERFLOW = "WarnUnsignedOverflow";
+static const char *REPLACE_ZERO_WITH_O = "ReplaceZeroWithO";
 
 #define CALC_MODE_DEFAULT calc_mode_float
 #define FLOAT_DIGITS_DEFAULT FLOAT_DIGITS_10_ID
@@ -182,6 +188,7 @@ void config_init(void)
         use_unsigned = get_boolean(keyfile, SETTINGS, USE_UNSIGNED, false);
         warn_on_signed_overflow = get_boolean(keyfile, SETTINGS, WARN_SIGNED_OVERFLOW, true);
         warn_on_unsigned_overflow = get_boolean(keyfile, SETTINGS, WARN_UNSIGNED_OVERFLOW, true);
+        replace_zero_with_o = get_boolean(keyfile, SETTINGS, REPLACE_ZERO_WITH_O, false);
     }
     else
     {
@@ -199,6 +206,7 @@ void config_init(void)
         use_unsigned = false;
         warn_on_signed_overflow = true;
         warn_on_unsigned_overflow = true;
+        replace_zero_with_o = false;
     }
     g_free(filename);
     g_key_file_free(keyfile);
@@ -235,6 +243,7 @@ void config_save(void)
     fprintf(fp, "%s=%s\n", USE_UNSIGNED, use_unsigned ? "true": "false");
     fprintf(fp, "%s=%s\n", WARN_SIGNED_OVERFLOW, warn_on_signed_overflow ? "true": "false");
     fprintf(fp, "%s=%s\n", WARN_UNSIGNED_OVERFLOW, warn_on_unsigned_overflow ? "true": "false");
+    fprintf(fp, "%s=%s\n", REPLACE_ZERO_WITH_O, replace_zero_with_o ? "true": "false");
     fclose(fp);
 
 #else
@@ -252,6 +261,7 @@ void config_save(void)
     g_key_file_set_boolean(keyfile, SETTINGS, USE_UNSIGNED, use_unsigned);
     g_key_file_set_boolean(keyfile, SETTINGS, WARN_SIGNED_OVERFLOW, warn_on_signed_overflow);
     g_key_file_set_boolean(keyfile, SETTINGS, WARN_UNSIGNED_OVERFLOW, warn_on_unsigned_overflow);
+    g_key_file_set_boolean(keyfile, SETTINGS, REPLACE_ZERO_WITH_O, replace_zero_with_o);
 
     gchar *filename = get_full_config_filename();
     g_key_file_save_to_file(keyfile, filename, NULL);
@@ -393,4 +403,14 @@ void config_set_warn_on_unsigned_overflow(bool en)
 bool config_get_warn_on_unsigned_overflow(void)
 {
     return warn_on_unsigned_overflow;
+}
+
+void config_set_replace_zero_with_o(bool en)
+{
+    replace_zero_with_o = en;
+}
+
+bool config_get_replace_zero_with_o(void)
+{
+    return replace_zero_with_o;
 }

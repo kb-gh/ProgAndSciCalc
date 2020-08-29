@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.4"
+#define VERSION "2.5"
 
 extern GtkWidget *window_main;
 

@@ -342,23 +342,78 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     return vbox;
 }
 
+
+/* default monospace font puts dot in middle of zero. If you don't like it,
+ * try replace zero with capital O */
+#define MAX_REPLACE_SIZE 100
+static void replace_zero_with_o(char *m, const char *msg)
+{
+    int count = 0;
+    while(*msg && count < MAX_REPLACE_SIZE - 1)
+    {
+        if (*msg == '0')
+        {
+            *m = 'O';
+        }
+        else
+        {
+            *m = *msg;
+        }
+        m++;
+        msg++;
+        count++;
+    }
+    *m = '\0';
+}
+
 void display_widget_main_set_text(const char *msg)
 {
-    gtk_label_set_text(GTK_LABEL(display), msg);
+    if (config_get_replace_zero_with_o())
+    {
+        char m[MAX_REPLACE_SIZE];
+        replace_zero_with_o(m, msg);
+        gtk_label_set_text(GTK_LABEL(display), m);
+    }
+    else
+    {
+        gtk_label_set_text(GTK_LABEL(display), msg);
+    }
 }
 
 static void display_widget_bin_set_text_top(const char *msg)
 {
     if (msg == NULL)
+    {
         msg = bin_disp_unused;
-    gtk_label_set_text(GTK_LABEL(bin_display_top), msg);
+    }
+    if (config_get_replace_zero_with_o())
+    {
+        char m[MAX_REPLACE_SIZE];
+        replace_zero_with_o(m, msg);
+        gtk_label_set_text(GTK_LABEL(bin_display_top), m);
+    }
+    else
+    {
+        gtk_label_set_text(GTK_LABEL(bin_display_top), msg);
+    }
 }
 
 static void display_widget_bin_set_text_bot(const char *msg)
 {
     if (msg == NULL)
+    {
         msg = bin_disp_unused;
-    gtk_label_set_text(GTK_LABEL(bin_display_bot), msg);
+    }
+    if (config_get_replace_zero_with_o())
+    {
+        char m[MAX_REPLACE_SIZE];
+        replace_zero_with_o(m, msg);
+        gtk_label_set_text(GTK_LABEL(bin_display_bot), m);
+    }
+    else
+    {
+        gtk_label_set_text(GTK_LABEL(bin_display_bot), msg);
+    }
 }
 
 static void set_bin_display(uint64_t ival, calc_width_enum width)

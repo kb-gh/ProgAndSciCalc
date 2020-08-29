@@ -27,6 +27,7 @@ static GtkWidget *entry_fs_main;
 static GtkWidget *entry_fs_bin;
 static GtkWidget *entry_but_height;
 static calc_mode_enum calc_mode;
+static bool replace_zero;
 
 /* Settings Floating */
 static GtkWidget *window_settings_float;
@@ -119,6 +120,9 @@ static void settings_ok_button_clicked(GtkWidget *widget, gpointer data)
 
     /* this is only used to set the startup value */
     config_set_calc_mode(calc_mode);
+
+    /* will take effect next time display updated */
+    config_set_replace_zero_with_o(replace_zero);
 
     gtk_widget_destroy(window_settings);
 }
@@ -227,6 +231,44 @@ static void add_calc_mode(GtkWidget *vbox)
     }
 }
 
+static void replace_zero_button_toggle(GtkWidget *widget, gpointer data)
+{
+    (void)data;
+    gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    replace_zero = active;
+}
+
+static const char *replace_zero_str[] =
+{
+"If you don't like the zero character in the monospace font used for",
+"the main and binary displays, try this low tech solution to replace",
+"zero characetrs with a capital O, it might look nicer."
+};
+
+static void add_replace_zero(GtkWidget *vbox)
+{
+    GtkWidget *lbl;
+    GtkWidget *button;
+    unsigned i;
+
+    /* long multiline message (I expect there is easier way to do it) */
+    for (i = 0; i < (sizeof replace_zero_str / sizeof replace_zero_str[0]); i++)
+    {
+        lbl = gtk_label_new(replace_zero_str[i]);
+        gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+        gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
+    }
+
+    replace_zero = config_get_replace_zero_with_o();
+
+    button = gtk_check_button_new_with_label("Replace zero with O");
+    if (replace_zero)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    g_signal_connect(button, "toggled",
+		     G_CALLBACK(replace_zero_button_toggle), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
+}
+
 /* Callback for menu Options->Settings (General) */
 static void settings_activate(GtkWidget *widget, gpointer data)
 {
@@ -258,6 +300,10 @@ static void settings_activate(GtkWidget *widget, gpointer data)
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_calc_mode(vbox);
+    separator = gtk_hseparator_new();
+    gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
+
+    add_replace_zero(vbox);
     separator = gtk_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 

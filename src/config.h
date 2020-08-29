@@ -91,4 +91,7 @@ bool config_get_warn_on_signed_overflow(void);
 
 void config_set_warn_on_unsigned_overflow(bool en);
 bool config_get_warn_on_unsigned_overflow(void);
+
+void config_set_replace_zero_with_o(bool en);
+bool config_get_replace_zero_with_o(void);
 #endif
