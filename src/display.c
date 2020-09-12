@@ -225,7 +225,7 @@ static bool update_display()
             if (calc_get_use_unsigned())
             {
                 int count = 0;
-                while (!calc_util_dec_unsigned_str_to_ival(disp_stack, width, &disp_ival))
+                while (!calc_util_unsigned_str_to_ival(disp_stack, width, &disp_ival, 10))
                 {
                     /* Fails if user entered out of range number.
                      * Remove a digit and try again, should only ever go round
@@ -241,7 +241,7 @@ static bool update_display()
             else
             {
                 int count = 0;
-                while (!calc_util_dec_signed_str_to_ival(disp_stack, width, &disp_ival))
+                while (!calc_util_signed_str_to_ival(disp_stack, width, &disp_ival, 10))
                 {
                     /* Fails if user has entered out of range number. Check for
                      * the special case of the +ve equivalent of int_min. */
@@ -264,8 +264,10 @@ static bool update_display()
         else
         {
             /* For hex mode, the number of digits entered has already been
-             * limited based on the the width. */
-            if (!calc_util_hex_strtoull(disp_stack, width, &disp_ival))
+             * limited based on the the width. Since hex mode shows the
+             * bit pattern, no distinction between signed and unsigned, just
+             * treat as unsigned. */
+            if (!calc_util_unsigned_str_to_ival(disp_stack, width, &disp_ival, 16))
             {
                 /* should never happen */
                 disp_error("Bad conversion hex to integer");
@@ -527,60 +529,14 @@ void display_get_val(uint64_t *ival, stackf_t *fval)
 }
 
 
-static uint64_t umax(calc_width_enum width)
-{
-    uint64_t res;
 
-    switch (width)
-    {
-    case calc_width_8:
-        res = UINT8_MAX;
-        break;
-    case calc_width_16:
-        res = UINT16_MAX;
-        break;
-    case calc_width_32:
-        res = UINT32_MAX;
-        break;
-    default:
-        res = UINT64_MAX;
-        break;
-    }
-    /* unnecessary, but harmless */
-    calc_util_mask_width(&res, width);
-    return res;
-}
-
-static uint64_t imax(calc_width_enum width, bool sign)
-{
-    int64_t sres;
-    uint64_t res;
-
-    switch (width)
-    {
-    case calc_width_8:
-        sres = sign ? INT8_MIN : INT8_MAX;
-        break;
-    case calc_width_16:
-        sres = sign ? INT16_MIN : INT16_MAX;
-        break;
-    case calc_width_32:
-        sres = sign ? INT32_MIN : INT32_MAX;
-        break;
-    default:
-        sres = sign ? INT64_MIN : INT64_MAX;
-        break;
-    }
-    res = sres;
-    calc_util_mask_width(&res, width);
-    return res;
-}
-
-bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_unsigned)
+bool display_get_best_integer(uint64_t *val, bool *negative)
 {
     /* This is the one case where it probably makes sense to convert the value
      * actually on the display rather than convert from the (more precise,
-     * unrounded) underlying floating point value. */
+     * unrounded) underlying floating point value.
+     * If the value is negative, convert as signed 64, if positive convert as
+     * unsigned 64. */
 
     uint64_t result;
     char *buf;
@@ -598,12 +554,7 @@ bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_uns
         sign = true;
         buf++;
     }
-
-    if (sign && use_unsigned)
-    {
-        *val = 0;
-        return false;
-    }
+    *negative = sign;
 
     /* anything starting with 0 converts to 0 */
     if (*buf == '0')
@@ -630,7 +581,7 @@ bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_uns
         else if (c == 'f' || c == 'F')
         {
             /* must be inf(inity) */
-            *val = use_unsigned ? umax(width) : imax(width, sign);
+            *val = sign ? (uint64_t)INT64_MIN : UINT64_MAX;
             return false;
         }
     }
@@ -645,21 +596,21 @@ bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_uns
             *val = 0;
             return true;
         }
-        if (use_unsigned)
+        if (sign)
         {
-            if (exp_val > 19)
+            if (exp_val > 18)
             {
                 /* definitely out of range */
-                *val = umax(width);
+                *val = (uint64_t)INT64_MIN;
                 return false;
             }
         }
         else
         {
-            if (exp_val > 18)
+            if (exp_val > 19)
             {
                 /* definitely out of range */
-                *val = imax(width, sign);
+                *val = UINT64_MAX;
                 return false;
             }
         }
@@ -708,19 +659,13 @@ bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_uns
         //printf("convert best A %s\n", buffer2);
 
         /* convert the resulting string, includes the sign if there is one */
-        if (use_unsigned)
+        if (sign)
         {
-            if (!calc_util_dec_unsigned_str_to_ival(buffer2, width, &result))
-            {
-                ret = false;
-            }
+            ret = calc_util_signed_str_to_ival(buffer2, calc_width_64, &result, 10);
         }
         else
         {
-            if (!calc_util_dec_signed_str_to_ival(buffer2, width, &result))
-            {
-                ret = false;
-            }
+            ret = calc_util_unsigned_str_to_ival(buffer2, calc_width_64, &result, 10);
         }
     }
     else
@@ -735,19 +680,13 @@ bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_uns
         //printf("convert best B %s\n", buffer1);
 
         /* convert the resulting string, includes the sign if there is one */
-        if (use_unsigned)
+        if (sign)
         {
-            if (!calc_util_dec_unsigned_str_to_ival(buffer1, width, &result))
-            {
-                ret = false;
-            }
+            ret = calc_util_signed_str_to_ival(buffer1, calc_width_64, &result, 10);
         }
         else
         {
-            if (!calc_util_dec_signed_str_to_ival(buffer1, width, &result))
-            {
-                ret = false;
-            }
+            ret = calc_util_unsigned_str_to_ival(buffer1, calc_width_64, &result, 10);
         }
     }
     *val = result;

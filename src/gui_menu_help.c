@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.5"
+#define VERSION "2.6"
 
 extern GtkWidget *window_main;
 
@@ -29,20 +29,21 @@ static const char *instructions[] =
 "MODE\n"
 "Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.\n"
 "           The main display can be decimal or hex, the value is also shown in binary\n"
-"           under the main display. (The binary display is interactive ie. you can click\n"
-"           on an individual bit to toggle that bit).\n"
-"Floating - uses decQuad decimal floating point type (34 digits internally). The main display\n"
+"           under the main display. Hex values, as with the binary display, show the bit\n"
+"           pattern and so look the same whether signed or unsigned. The binary display\n"
+"           is interactive ie. you can click on an individual bit to toggle that bit.\n"
+"Floating - uses decQuad decimal floating point type (34 digits internally). The display\n"
 "           can be configured to use from 8 to 20 digits (20 is chosen as the max because\n"
 "           it's plenty, and 20 is sufficient to precisely represent all integers in the\n"
 "           range of an unsigned 64 bit integer, in case that might be useful).\n"
 "           Also features unit conversions, and can optionally read in constants from a\n"
 "           user supplied text file.\n\n"
-"Use the [MODE] button to switch between modes. The current value (possibly within some\n"
-"limitations) is passed on when switching mode, see Mode Change section further down.",
+"Use the [MODE] button to switch between modes. The current value, possibly within some\n"
+"limitations, is passed on when switching mode, see Mode Change section further down.",
 
 "DIRECTORY FOR CONFIG AND CONSTANTS FILES\n"
-"If you want the calculator to save configuration settings (otherwise it will always start\n"
-"up with default configuration), you need to create a directory .ProgAndSciCalc under your\n"
+"If you want the calculator to save configuration settings, otherwise it will always start\n"
+"up with default configuration, you need to create a directory .ProgAndSciCalc under your\n"
 "home directory. The calculator will then create a config file under this location ie.\n"
 "  ~/.ProgAndSciCalc/config\n"
 "This is also the location where you can optionally place a constants file (described in\n"
@@ -140,17 +141,21 @@ static const char *instructions[] =
 "the chosen button then pressing SPACEBAR.",
 
 "MODE CHANGE\n"
-"When changing modes, the current value is passed on to the new mode.\n"
+"When changing modes, the current value is passed on to the new mode.\n\n"
 "When switching from Integer mode to Floating mode, the current integer value on the\n"
-"display is converted to decQuad.\n"
+"display is converted to decQuad.\n\n"
 "When switching from Floating mode to Integer mode, the current float value on the\n"
 "display is converted (truncated) to integer. Note that this is the one case where\n"
 "the rounded display value is used rather than the underlying decQuad, so the result\n"
-"may depend on the number of digits selected for display. If out of range, the result\n"
-"will be int_min or int_max if signed, or 0 or uint_max if unsigned. (If out of range\n"
-"due to width/signedness, it's a bit unfriendly, but at this point you can change the\n"
-"width/signedness, go back to Floating mode, retrieve the original value from History,\n"
-"then finally return to Integer mode).\n\n"
+"may depend on the number of digits selected for display. The determination of whether\n"
+"the value fits in the range of the current settings is based on the integer width.\n"
+"A value in the range from INT8_MIN up to UINT8_MAX requires width 8. A value in the\n"
+"range from INT16_MIN up to UINT16_MAX requires width 16 etc. The width will be\n"
+"automatically increased (with a notification) if needed. The signed/unsigned setting\n"
+"will not be changed. So if, for example, the current settings are width 8, unsigned,\n"
+"decimal, a value of -1 will give 255. If the value is negative and less than\n"
+"INT64_MIN, or positive and greater than UINT64_MAX, you get 0 (with a warning) and\n"
+"the width will be unchanged. (NB. some of the behaviour here changed in version 2.6).\n\n"
 "Example 1, enter 123.456 in Floating mode, switch to Integer, now have 123, switch\n"
 "back to Floating mode, now have 123. The original value 123.456 can be retrieved\n"
 "from History if required.\n"

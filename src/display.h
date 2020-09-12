@@ -110,12 +110,12 @@ void disp_set_error_callback(void (*fn)(const char *msg));
  * So when converting to integer it would be truncated to 79, which looks
  * a bit wrong. So convert from the (rounded) value on the display rather
  * than from the underlying floating point value.
- * Returns true if the value is in range of the current calc integer
- * width/signedness, else false (in which case *val will be set to
- * either int_min/int_max (as appropriate for the width) if signed, or to
- * 0 or uint_max (as appropriate for the width) if unsigned).
+ * Returns true if the value is positive and in range of UINT64_MAX, or
+ * negative and in range of INT64_MIN.
+ * The value is returned in *val, with *negative = true if it represents
+ * a negative number.
  */
-bool display_get_best_integer(uint64_t *val, calc_width_enum width, bool use_unsigned);
+bool display_get_best_integer(uint64_t *val, bool *negative);
 
 /* set the grouping for hex digits, 0, 4, or 8 */
 void display_set_hex_grouping(int hg);

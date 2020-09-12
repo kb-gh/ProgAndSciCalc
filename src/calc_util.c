@@ -84,16 +84,18 @@ bool calc_util_is_in_unsigned_range(uint64_t x, calc_width_enum width)
     }
 }
 
-bool calc_util_dec_signed_str_to_ival(const char *str,
-                                      calc_width_enum width,
-                                      uint64_t *val)
+
+bool calc_util_signed_str_to_ival(const char *str,
+                                  calc_width_enum width,
+                                  uint64_t *val,
+                                  int base)
 {
     bool ok = true;
     int64_t sres;
     uint64_t result;
 
     errno = 0;
-    long long resll = strtoll(str, NULL, 10);
+    long long resll = strtoll(str, NULL, base);
     if (errno == ERANGE)
     {
         //printf("signed_str_to_ival ERANGE\n");
@@ -109,33 +111,12 @@ bool calc_util_dec_signed_str_to_ival(const char *str,
         }
     }
 
+    sres = resll;
+
     if (ok)
     {
-        /* must be in range of int64 to get here */
-        sres = resll;
         /* now check for smaller widths */
         ok = calc_util_is_in_signed_range(sres, width);
-    }
-
-    if (!ok)
-    {
-        bool sign = resll < 0;
-        /* set return value based on width */
-        switch (width)
-        {
-        case calc_width_8:
-            sres = sign ? INT8_MIN : INT8_MAX;
-            break;
-        case calc_width_16:
-            sres = sign ? INT16_MIN : INT16_MAX;
-            break;
-        case calc_width_32:
-            sres = sign ? INT32_MIN : INT32_MAX;
-            break;
-        default:
-            sres = sign ? INT64_MIN : INT64_MAX;
-            break;
-        }
     }
 
     result = sres;
@@ -144,15 +125,17 @@ bool calc_util_dec_signed_str_to_ival(const char *str,
     return ok;
 }
 
-bool calc_util_dec_unsigned_str_to_ival(const char *str,
-                                        calc_width_enum width,
-                                        uint64_t *val)
+
+bool calc_util_unsigned_str_to_ival(const char *str,
+                                    calc_width_enum width,
+                                    uint64_t *val,
+                                    int base)
 {
     bool ok = true;
     uint64_t result;
 
     errno = 0;
-    unsigned long long resll = strtoull(str, NULL, 10);
+    unsigned long long resll = strtoull(str, NULL, base);
     if (errno == ERANGE)
     {
         //printf("unsigned_str_to_ival ERANGE\n");
@@ -168,77 +151,62 @@ bool calc_util_dec_unsigned_str_to_ival(const char *str,
         }
     }
 
+    result = resll;
     if (ok)
     {
-        /* must be in range of uint64 to get here */
-        result = resll;
         /* now check for smaller widths */
         ok = calc_util_is_in_unsigned_range(result, width);
     }
 
-    if (!ok)
-    {
-        /* set return value based on width */
-        switch (width)
-        {
-        case calc_width_8:
-            result = UINT8_MAX;
-            break;
-        case calc_width_16:
-            result = UINT16_MAX;
-            break;
-        case calc_width_32:
-            result = UINT32_MAX;
-            break;
-        default:
-            result = UINT64_MAX;
-            break;
-        }
-    }
-
-    /* unnecessary, but harmless */
     calc_util_mask_width(&result, width);
     *val = result;
     return ok;
 }
 
-bool calc_util_hex_strtoull(const char *str,
-                            calc_width_enum width,
-                            uint64_t *val)
+
+static calc_width_enum calc_util_find_min_signed_width(int64_t x)
 {
-    /* long long guaranteed to be at least 64bits so use that.
-     * User input is already limited to at most 16 digits. */
-    uint64_t result;
-    result = strtoull(str, NULL, 16);
+    if (calc_util_is_in_signed_range(x, calc_width_8))
+        return calc_width_8;
+    else if (calc_util_is_in_signed_range(x, calc_width_16))
+        return calc_width_16;
+    else if (calc_util_is_in_signed_range(x, calc_width_32))
+        return calc_width_32;
+    else
+        return calc_width_64;
+}
 
-    /* From display, the str is already limited to the max number of digits
-     * for the given width so this should always be true */
-    bool ok = calc_util_is_in_unsigned_range(result, width);
+static calc_width_enum calc_util_find_min_unsigned_width(uint64_t x)
+{
+    if (calc_util_is_in_unsigned_range(x, calc_width_8))
+        return calc_width_8;
+    else if (calc_util_is_in_unsigned_range(x, calc_width_16))
+        return calc_width_16;
+    else if (calc_util_is_in_unsigned_range(x, calc_width_32))
+        return calc_width_32;
+    else
+        return calc_width_64;
+}
 
-    if (!ok)
+calc_width_enum calc_util_get_changed_width(uint64_t uval, bool negative,
+                                            calc_width_enum current_width)
+{
+    calc_width_enum selected_width = current_width;
+    calc_width_enum min_width;
+
+    if (negative)
     {
-        /* set return value based on width */
-        switch (width)
-        {
-        case calc_width_8:
-            result = UINT8_MAX;
-            break;
-        case calc_width_16:
-            result = UINT16_MAX;
-            break;
-        case calc_width_32:
-            result = UINT32_MAX;
-            break;
-        default:
-            result = UINT64_MAX;
-            break;
-        }
+        min_width = calc_util_find_min_signed_width((int64_t)uval);
+    }
+    else
+    {
+        min_width = calc_util_find_min_unsigned_width(uval);
     }
 
-    /* unnecessary, but harmless */
-    calc_util_mask_width(&result, width);
-
-    *val = result;
-    return ok;
+    if (min_width > selected_width)
+    {
+        selected_width = min_width;
+    }
+    return selected_width;
 }
 

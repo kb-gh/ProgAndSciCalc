@@ -29,7 +29,7 @@ static void (*history_callback)(uint64_t, stackf_t);
 static void (*num_paren_callback)(int);
 static void (*warn_callback)(const char *msg);
 static void (*error_callback)(const char *msg);
-static bool (*get_best_integer_callback)(uint64_t *, calc_width_enum, bool);
+static bool (*get_best_integer_callback)(uint64_t *, bool *);
 
 static calc_mode_enum calc_mode;
 static calc_angle_enum calc_angle;
@@ -1033,8 +1033,9 @@ void calc_init(int debug_lvl,
     /* User should do a calc_clear before starting. */
 }
 
-static const char *int_conv_warn = "Signed Integer conversion out of range";
-static const char *uint_conv_warn = "Unsigned Integer conversion out of range";
+static const char *width_changed_warn = "Integer width changed to make value fit";
+static const char *neg_range_warn = "Negative value was out of range (< INT64_MIN)";
+static const char *pos_range_warn = "Positive value was out of range (> UINT64_MAX)";
 
 void calc_set_mode(calc_mode_enum mode)
 {
@@ -1054,7 +1055,7 @@ void calc_set_mode(calc_mode_enum mode)
 
         /* convert to decimal float */
         char buf[DFP_STRING_MAX];
-        if (calc_get_use_unsigned())
+        if (use_unsigned)
         {
             sprintf(buf, "%"PRIu64, s->ival);
         }
@@ -1072,19 +1073,44 @@ void calc_set_mode(calc_mode_enum mode)
 
         if (get_best_integer_callback == NULL)
         {
+            /* shouldn't happen */
             save_val.ival = 0;
-            calc_error("get_best_integer_callback NULL");
+            init_from_save_val = true;
+            calc_mode = mode;
+            calc_warn("get_best_integer_callback NULL");
+            return;
+        }
+
+        const char *msg = NULL;
+        bool negative;
+        uint64_t uval;
+        calc_width_enum current_width = integer_width;
+        calc_width_enum selected_width = current_width;
+        bool ok = get_best_integer_callback(&uval, &negative);
+        if (ok)
+        {
+            /* The number was in the range of s64 (if it was negative) or
+             * u64 (if it was positive), so there must be a calc width that fits.
+             * See if we need to change width to make it fit. */
+            selected_width = calc_util_get_changed_width(uval, negative, current_width);
+            if (selected_width != current_width)
+            {
+                msg = width_changed_warn;
+            }
         }
         else
         {
-            if (!get_best_integer_callback(&save_val.ival, integer_width, use_unsigned))
-            {
-                if (use_unsigned)
-                    calc_warn(uint_conv_warn);
-                else
-                    calc_warn(int_conv_warn);
-            }
+            /* The number was outside the range of s64 (if negative) or
+             * u64 (if positive). Just return 0 and leave width unchanged. */
+            uval = 0;
+            msg = negative ? neg_range_warn : pos_range_warn;
+        }
 
+        save_val.ival = uval;
+        integer_width = selected_width;
+        if (msg != NULL)
+        {
+            calc_warn(msg);
         }
     }
 
@@ -1154,7 +1180,7 @@ void calc_set_history_callback(void (*fn)(uint64_t, stackf_t))
     history_callback = fn;
 }
 
-void calc_set_get_best_integer_callback(bool (*fn)(uint64_t*, calc_width_enum, bool))
+void calc_set_get_best_integer_callback(bool (*fn)(uint64_t*, bool *))
 {
     /* For calculating the best integer from a floating point, when doing
      * mode switch from float to integer mode.

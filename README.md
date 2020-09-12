@@ -6,18 +6,19 @@ Written in C. Uses GTK2 for GUI.
 MODE
 Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.
            The main display can be decimal or hex, the value is also shown in binary
-           under the main display. (The binary display is interactive ie. you can click
-           on an individual bit to toggle that bit).
+           under the main display. Hex values, as with the binary display, show the bit
+           pattern and so look the same whether signed or unsigned. The binary display
+           is interactive ie. you can click on an individual bit to toggle that bit.
 
-Floating - uses decQuad decimal floating point type (34 digits internally). The main display
+Floating - uses decQuad decimal floating point type (34 digits internally). The display
            can be configured to use from 8 to 20 digits (20 is chosen as the max because
            it's plenty, and 20 is sufficient to precisely represent all integers in the
            range of an unsigned 64 bit integer, in case that might be useful).
            Also features unit conversions, and can optionally read in constants from a
            user supplied text file.
 
-Use the [MODE] button to switch between modes. The current value (possibly within some
-limitations) is passed on when switching mode, see Mode Change section further down.
+Use the [MODE] button to switch between modes. The current value, possibly within some
+limitations, is passed on when switching mode, see Mode Change section further down.
 
 
 DIRECTORY FOR CONFIG AND CONSTANTS FILES
@@ -127,16 +128,23 @@ the chosen button then pressing SPACEBAR.
 
 MODE CHANGE
 When changing modes, the current value is passed on to the new mode.
+
 When switching from Integer mode to Floating mode, the current integer value on the
 display is converted to decQuad.
+
 When switching from Floating mode to Integer mode, the current float value on the
 display is converted (truncated) to integer. Note that this is the one case where
 the rounded display value is used rather than the underlying decQuad, so the result
-may depend on the number of digits selected for display. If out of range, the result
-will be int_min or int_max if signed, or 0 or uint_max if unsigned. (If out of range
-due to width/signedness, it's a bit unfriendly, but at this point you can change the
-width/signedness, go back to Floating mode, retrieve the original value from History,
-then finally return to Integer mode).
+may depend on the number of digits selected for display. The determination of whether
+the value fits in the range of the current settings is based on the integer width.
+A value in the range from INT8_MIN up to UINT8_MAX requires width 8. A value in the
+range from INT16_MIN up to UINT16_MAX requires width 16 etc. The width will be
+automatically increased (with a notification) if needed. The signed/unsigned setting
+will not be changed. So if, for example, the current settings are width 8, unsigned,
+decimal, a value of -1 will give 255. If the value is negative and less than
+INT64_MIN, or positive and greater than UINT64_MAX, you get 0 (with a warning) and
+the width will be unchanged. (NB. some of the behaviour here changed in version 2.6).
+
 Example 1, enter 123.456 in Floating mode, switch to Integer, now have 123, switch
 back to Floating mode, now have 123. The original value 123.456 can be retrieved
 from History if required.

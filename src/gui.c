@@ -1810,6 +1810,15 @@ static char *massage_float_txt(char *buf)
     return start;
 }
 
+static bool pasted_value_is_negative(const char *text)
+{
+    /* if first non white space char is a '-' */
+    while (*text && *text <= ' ')
+    {
+        text++;
+    }
+    return *text == '-';
+}
 
 static void clipboard_copy(void)
 {
@@ -1820,48 +1829,88 @@ static void clipboard_copy(void)
     gtk_clipboard_set_text(clip_primary, display_get_text(), -1);
 }
 
+
+static const char *width_changed_warn = "Integer width changed to make value fit";
+static const char *neg_range_warn = "Negative value was out of range (< INT64_MIN)";
+static const char *pos_range_warn = "Positive value was out of range (> UINT64_MAX)";
+
 static void clipboard_paste_callback(GtkClipboard *clipboard, const gchar *text, gpointer data)
 {
     (void)clipboard;
     (void)data;
 
-    if (text != NULL)
+    if (text == NULL)
     {
-        if (calc_get_mode() == calc_mode_integer)
+        return;
+    }
+
+    if (calc_get_mode() == calc_mode_integer)
+    {
+        stackf_t dzero;
+        dfp_zero(&dzero);
+
+        bool ok;
+        const char *msg = NULL;
+        uint64_t uval;
+        int base = gui_radix == gui_radix_dec ? 10 : 16;
+        calc_width_enum current_width = calc_get_integer_width();
+        calc_width_enum selected_width = current_width;
+        bool negative = pasted_value_is_negative(text);
+
+        if (negative)
         {
-            stackf_t dzero;
-            dfp_zero(&dzero);
-            uint64_t ival;
-            /* not going to give any warnings if out range, you get what you get */
-            if (gui_radix == gui_radix_dec)
-            {
-                if (calc_get_use_unsigned())
-                {
-                    ival = strtoull(text, NULL, 10);
-                }
-                else
-                {
-                    ival = strtoll(text, NULL, 10);
-                }
-            }
-            else
-            {
-                ival = strtoull(text, NULL, 16);
-            }
-            calc_give_arg(ival, dzero);
-            calc_give_op(cop_peek);
+            ok = calc_util_signed_str_to_ival(text, calc_width_64, &uval, base);
         }
         else
         {
-            /* dfp_from_string isn't very forgiving so pre process the text */
-            char temp[DFP_STRING_MAX];
-            temp[0] = '\0';
-            strncat(temp, text, DFP_STRING_MAX-1);
-            stackf_t fval;
-            dfp_from_string(&fval, massage_float_txt(temp), &dfp_context);
-            calc_give_arg(0, fval);
-            calc_give_op(cop_peek);
+            ok = calc_util_unsigned_str_to_ival(text, calc_width_64, &uval, base);
         }
+
+        if (ok)
+        {
+            /* The number was in the range of s64 (if it was negative) or
+             * u64 (if it was positive), so there must be a calc width that fits.
+             * See if we need to change width to make it fit. */
+            selected_width = calc_util_get_changed_width(uval, negative, current_width);
+            if (selected_width != current_width)
+            {
+                msg = width_changed_warn;
+            }
+        }
+        else
+        {
+            /* The number was outside the range of s64 (if negative) or
+             * u64 (if positive). Just return 0 and leave width unchanged. */
+            uval = 0;
+            msg = negative ? neg_range_warn : pos_range_warn;
+        }
+
+        if (selected_width == calc_width_8)
+            gtk_button_clicked(GTK_BUTTON(rbut_int_width[0]));
+        else if (selected_width == calc_width_16)
+            gtk_button_clicked(GTK_BUTTON(rbut_int_width[1]));
+        else if (selected_width == calc_width_32)
+            gtk_button_clicked(GTK_BUTTON(rbut_int_width[2]));
+        else
+            gtk_button_clicked(GTK_BUTTON(rbut_int_width[3]));
+
+        calc_give_arg(uval, dzero);
+        calc_give_op(cop_peek);
+        if (msg != NULL)
+        {
+            gui_warn(msg);
+        }
+    }
+    else
+    {
+        /* dfp_from_string isn't very forgiving so pre process the text */
+        char temp[DFP_STRING_MAX];
+        temp[0] = '\0';
+        strncat(temp, text, DFP_STRING_MAX-1);
+        stackf_t fval;
+        dfp_from_string(&fval, massage_float_txt(temp), &dfp_context);
+        calc_give_arg(0, fval);
+        calc_give_op(cop_peek);
     }
 }
 

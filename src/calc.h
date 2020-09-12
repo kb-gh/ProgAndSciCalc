@@ -135,7 +135,9 @@ void calc_init(int debug_lvl,
  * before starting for the first time and following a mode switch. */
 void calc_clear(void);
 
-/* Give value entered by user to calculator. */
+/* Give value entered by user to calculator.
+ * If calc is in integer mode, ival is used, fval don't care (suggest set to dfp zero).
+ * If calc is in float mode, fval is used, ival don't care (suggest set to 0). */
 void calc_give_arg(uint64_t ival, stackf_t fval);
 
 /* Give operation to calculator. */
@@ -165,7 +167,7 @@ void calc_set_num_paren_callback(void (*fn)(int));
 
 /* Set callback for getting the best integer value when converting
  * from a floating point value to integer (during mode switch) */
-void calc_set_get_best_integer_callback(bool (*fn)(uint64_t*, calc_width_enum, bool));
+void calc_set_get_best_integer_callback(bool (*fn)(uint64_t *, bool *));
 
 /* Set callbacks to report warnings/errors to gui. */
 void calc_set_warn_callback(void (*fn)(const char *msg));
@@ -202,33 +204,24 @@ bool calc_get_warn_on_unsigned_overflow(void);
 /* special case for toggling bits in the binary display */
 void calc_binary_bit_xor(uint64_t bitmask);
 
-/* Interpret str as a signed decimal integer (note result returned as uint64).
- * Return true if the value is in range of the width, with the value
- * returned in val. If out of range return false, with val set to
- * either the int_min or int_max value corresponding to the width.
- * Note str is assumed to contain only an optional '-' sign followed
- * by valid digits [0-9]. */
-bool calc_util_dec_signed_str_to_ival(const char *str,
-                                      calc_width_enum width,
-                                      uint64_t *val);
+/* Convert content of str using strtoull.
+ * The result is returned in *val and is truncated according to the width.
+ * Return false if the strtoull converison overflows or if the result
+ * was outside the range of the width. */
+bool calc_util_unsigned_str_to_ival(const char *str,
+                                    calc_width_enum width,
+                                    uint64_t *val,
+                                    int base);
 
-/* Interpret str as an unsigned decimal integer.
- * Return true if the value is in range of the width, with the value
- * returned in val. If out of range return false, with val set to
- * the uint_max value corresponding to the width.
- * Note str is assumed to contain only valid digits [0-9]. */
-bool calc_util_dec_unsigned_str_to_ival(const char *str,
-                                        calc_width_enum width,
-                                        uint64_t *val);
+/* Convert content of str using strtoll.
+ * The result is returned in *val and is truncated according to the width.
+ * Return false if the strtoll converison overflows or if the result
+ * was outside the range of the width. */
+bool calc_util_signed_str_to_ival(const char *str,
+                                  calc_width_enum width,
+                                  uint64_t *val,
+                                  int base);
 
-/* Interpret str as an unsigned hex integer.
- * Return true if the value is in range of the width, with the value
- * returned in val. If out of range return false, with val set to
- * the uint_max value corresponding to the width.
- * Note str is assumed to contain at most 16 hex digits. */
-bool calc_util_hex_strtoull(const char *str,
-                            calc_width_enum width,
-                            uint64_t *val);
 
 /* The values in the uint64 are always masked off to the width eg. for
  * width=8, a value of -1 is held as 0x00000000000000ff. This function
@@ -247,4 +240,15 @@ bool calc_util_is_in_unsigned_range(uint64_t x, calc_width_enum width);
 /* mask off x to the width */
 void calc_util_mask_width(uint64_t *x, calc_width_enum width);
 
+
+/* When changing from float to integer mode, or pasting in a value in
+ * integer mode, decide if the current integer width is enough, or does
+ * it need to be increased.
+ * uval is either a positive value in range of u64 (negative==false) or
+ * represents a negative value in range of s64 (negative==true).
+ * A value in the range of INT8_MIN up to UINT8_MAX requires width 8.
+ * A value in the range of INT16_MIN up to UINT16_MAX requires width 16 etc.
+ * Return the width required, which will be >= current_width.*/
+calc_width_enum calc_util_get_changed_width(uint64_t uval, bool negative,
+                                            calc_width_enum current_width);
 #endif
