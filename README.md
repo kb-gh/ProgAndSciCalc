@@ -1,5 +1,5 @@
 # ProgAndSciCalc
-<pre>
+~~~
 Dual mode calculator, Integer (Programmer) mode, and Floating (Scientific) mode.
 Written in C. Uses GTK2 for GUI.
 
@@ -193,7 +193,7 @@ Ctrl-V will paste from the default clipboard
 Ctrl-W will paste from the primary clipboard
 Pasted value is converted according to the current mode, and for Integer mode,
 according to whether display is set as DEC or HEX.
-</pre>
+~~~
 
 ![](screenshots/sci.png)
 
