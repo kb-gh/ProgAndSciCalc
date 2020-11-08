@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.6"
+#define VERSION "2.7"
 
 extern GtkWidget *window_main;
 
@@ -54,7 +54,7 @@ static const char *instructions[] =
 "[mod] is modulo division (ie. remainder)\n"
 "[pow] is x to power y eg. 2 [pow] 3 = 8\n"
 "[root] is the reverse eg. 8 [root] 3 = 2\n"
-"[<< n] [>> n] are left shift and right shift by n eg. 20 [<<] 2 = 80, 20 [>>] 2 = 5\n"
+"[<<n] [>>n] are left shift and right shift by n eg. 20 [<<n] 2 = 80, 20 [>>n] 2 = 5\n"
 "[and] [or] [xor] are bitwise operations\n"
 "[gcd] is greatest common divisor eg. 9 [gcd] 6 = 3\n\n"
 "Precedence, from low to high, is ADD_SUB, MUL_DIV, POWER_ROOT.\n"
@@ -136,7 +136,8 @@ static const char *instructions[] =
 " width 8                 ctrl-1\n"
 " width 16                ctrl-2\n"
 " width 32                ctrl-3\n"
-" width 64                ctrl-4\n\n"
+" width 64                ctrl-4\n"
+" Repeated Equals           r\n\n"
 "It is possible to access other buttons from keyboard by using cursor keys to highlight\n"
 "the chosen button then pressing SPACEBAR.",
 

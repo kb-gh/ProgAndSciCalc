@@ -204,6 +204,7 @@ static GtkWidget *lbl_status;
 static GtkWidget *lbl_mem;
 static GtkWidget *lbl_pending_bin_op;
 static GtkWidget *but_backspace;
+static GtkWidget *but_repeat_eq;
 static GtkWidget *but_grid[bid_num_displayable];
 static GtkWidget *rbut_int_width[num_calc_widths];
 static GtkWidget *rbut_int_signed[NUM_INT_SIGNED_RB];
@@ -1079,6 +1080,10 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
         case BSP_KEY:
             return key_click_any_mode(but_backspace);
 
+        case 'r':
+        case 'R':
+            return key_click_any_mode(but_repeat_eq);
+
         default:
             return FALSE;
     }
@@ -1303,6 +1308,7 @@ static void gui_recreate(void)
     lbl_mem = NULL;
     lbl_pending_bin_op = NULL;
     but_backspace = NULL;
+    but_repeat_eq = NULL;
     for (int i = 0; i < num_calc_widths; i++)
     {
         rbut_int_width[i] = NULL;
@@ -1388,6 +1394,7 @@ static void gui_recreate(void)
     g_signal_connect(chk_repeat_eq, "toggled",
                      G_CALLBACK(chk_toggle), NULL);
     gtk_box_pack_start(GTK_BOX(hbox_status), chk_repeat_eq, TRUE, TRUE, 0);
+    but_repeat_eq = chk_repeat_eq;
     gtk_widget_show(chk_repeat_eq);
 
     /* Add a status label into hbox_status */

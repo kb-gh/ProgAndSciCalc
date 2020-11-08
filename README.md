@@ -35,7 +35,7 @@ BINARY OPERATORS
 [mod] is modulo division (ie. remainder)
 [pow] is x to power y eg. 2 [pow] 3 = 8
 [root] is the reverse eg. 8 [root] 3 = 2
-[<< n] [>> n] are left shift and right shift by n eg. 20 [<<] 2 = 80, 20 [>>] 2 = 5
+[<<n] [>>n] are left shift and right shift by n eg. 20 [<<n] 2 = 80, 20 [>>n] 2 = 5
 [and] [or] [xor] are bitwise operations
 [gcd] is greatest common divisor eg. 9 [gcd] 6 = 3
 Precedence, from low to high, is ADD_SUB, MUL_DIV, POWER_ROOT.
@@ -122,6 +122,8 @@ Some of the more common functions are mapped to keyboard shortcuts, case insensi
  width 16                ctrl-2
  width 32                ctrl-3
  width 64                ctrl-4
+ Repeated Equals           r
+
 It is possible to access other buttons from keyboard by using cursor keys to highlight
 the chosen button then pressing SPACEBAR.
 
