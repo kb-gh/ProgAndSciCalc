@@ -1,7 +1,7 @@
 /*****************************************************************************
- * File gui_internal.h part of ProgAndSciCalc
+ * File gui_util.h part of ProgAndSciCalc
  *
- * Copyright (C) 2018 Ken Bromham
+ * Copyright (C) 2021 Ken Bromham
  *
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,35 +18,17 @@
  */
 
 
-#ifndef GUI_INTERNAL_H
-#define GUI_INTERNAL_H
+#ifndef GUI_UTIL_H
+#define GUI_UTIL_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 #include <gtk/gtk.h>
 
-#include "gui.h"
-#include "gui_util.h"
-#include "display.h"
-#include "display_widget.h"
-#include "calc.h"
-#include "config.h"
 
-
-GtkWidget *create_menu(void);
-
-void options_menu_add(GtkWidget *menubar);
-void help_menu_add(GtkWidget *menubar);
-void conversion_menu_add(GtkWidget *menubar);
-void constants_menu_add(GtkWidget *menubar);
-
-void gui_menu_constants_init(void);
-void gui_menu_constants_deinit(void);
-
-void gui_history_init(void);
-void gui_history_open(void);
-void gui_history_add(uint64_t ival, stackf_t fval);
+GtkWidget *gui_hseparator_new(void);
+GtkWidget *gui_hbox_new(gboolean homogeneous, gint spacing);
+GtkWidget *gui_vbox_new(gboolean homogeneous, gint spacing);
+GtkWidget *gui_label_new(const gchar *str, gfloat xalign, gfloat yalign);
 
 #endif
+

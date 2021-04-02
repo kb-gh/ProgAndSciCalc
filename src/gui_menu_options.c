@@ -137,14 +137,13 @@ static void add_fontsize(GtkWidget *vbox)
     char msg[80];
     char buf[40];
 
-    lbl = gtk_label_new("Sizing (requires mode change or program restart to take effect)");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Sizing (requires mode change or program restart to take effect)", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 5);
 
-    hbox = gtk_hbox_new(FALSE, 4);
+    hbox = gui_hbox_new(FALSE, 4);
     sprintf(msg, "main display fontsize (%d to %d, default %d)",
             MAIN_FONTSIZE_MIN, MAIN_FONTSIZE_MAX, MAIN_FONTSIZE_DEFAULT);
-    lbl = gtk_label_new(msg);
+    lbl = gui_label_new(msg, 0.5, 0.5);
     entry_fs_main = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(entry_fs_main), FS_TEXT_LEN);
     gtk_entry_set_width_chars(GTK_ENTRY(entry_fs_main), FS_TEXT_LEN);
@@ -154,10 +153,10 @@ static void add_fontsize(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), entry_fs_main, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-    hbox = gtk_hbox_new(FALSE, 4);
+    hbox = gui_hbox_new(FALSE, 4);
     sprintf(msg, "binary display fontsize (%d to %d, default %d)",
             BIN_FONTSIZE_MIN, BIN_FONTSIZE_MAX, BIN_FONTSIZE_DEFAULT);
-    lbl = gtk_label_new(msg);
+    lbl = gui_label_new(msg, 0.5, 0.5);
     entry_fs_bin = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(entry_fs_bin), FS_TEXT_LEN);
     gtk_entry_set_width_chars(GTK_ENTRY(entry_fs_bin), FS_TEXT_LEN);
@@ -167,10 +166,10 @@ static void add_fontsize(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), entry_fs_bin, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-    hbox = gtk_hbox_new(FALSE, 4);
+    hbox = gui_hbox_new(FALSE, 4);
     sprintf(msg, "button height (%d to %d, default %d)",
             BUT_HEIGHT_MIN, BUT_HEIGHT_MAX, BUT_HEIGHT_DEFAULT);
-    lbl = gtk_label_new(msg);
+    lbl = gui_label_new(msg, 0.5, 0.5);
     entry_but_height = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(entry_but_height), FS_TEXT_LEN);
     gtk_entry_set_width_chars(GTK_ENTRY(entry_but_height), FS_TEXT_LEN);
@@ -212,8 +211,7 @@ static void add_calc_mode(GtkWidget *vbox)
 
     calc_mode = config_get_calc_mode();
 
-    lbl = gtk_label_new("Calculator mode at startup");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Calculator mode at startup", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     for (int i = 0; i < NUM_CALC_MODE_RB; i++)
@@ -254,8 +252,7 @@ static void add_replace_zero(GtkWidget *vbox)
     /* long multiline message (I expect there is easier way to do it) */
     for (i = 0; i < (sizeof replace_zero_str / sizeof replace_zero_str[0]); i++)
     {
-        lbl = gtk_label_new(replace_zero_str[i]);
-        gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+        lbl = gui_label_new(replace_zero_str[i], 0, 0.5);
         gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
     }
 
@@ -289,34 +286,34 @@ static void settings_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(settings_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_settings), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_settings), vbox);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_fontsize(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_calc_mode(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_replace_zero(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     // OK and Cancel buttons
 
-    hbox_but = gtk_hbox_new(FALSE, 0);
+    hbox_but = gui_hbox_new(TRUE, 0);
     button = gtk_button_new_with_mnemonic("_OK");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_ok_button_clicked), NULL);
 
     button = gtk_button_new_with_mnemonic("_Cancel");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_cancel_button_clicked), NULL);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_but, FALSE, FALSE, 10);
@@ -405,10 +402,9 @@ static void add_float_digits(GtkWidget *vbox)
 
     float_digits = config_get_float_digits();
 
-    hbox = gtk_hbox_new(TRUE, 0);
+    hbox = gui_hbox_new(TRUE, 0);
 
-    lbl = gtk_label_new("Number of display digits at startup");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Number of display digits at startup", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     for (int i = 0; i < NUM_FLOAT_DIGITS_ID; i++)
@@ -481,8 +477,7 @@ static void add_random_num(GtkWidget *vbox)
 
     random_01 = config_get_random_01();
 
-    lbl = gtk_label_new("Range for random number function");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Range for random number function", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     /* radio buttons */
@@ -511,10 +506,10 @@ static void add_random_num(GtkWidget *vbox)
     }
 
     /* choose n entry */
-    hbox = gtk_hbox_new(FALSE, 4);
+    hbox = gui_hbox_new(FALSE, 4);
     sprintf(msg, "Choose n (%d to %d, default %d)",
             RANDOM_N_MIN, RANDOM_N_MAX, RANDOM_N_DEFAULT);
-    lbl = gtk_label_new(msg);
+    lbl = gui_label_new(msg, 0.5, 0.5);
     entry_ran_n = gtk_entry_new();
     //printf("entry_ran_n created\n");
     gtk_entry_set_max_length(GTK_ENTRY(entry_ran_n), RAN_N_TEXT_LEN);
@@ -552,8 +547,7 @@ static void add_sct_rounding(GtkWidget *vbox)
     /* long multiline message (I expect there is easier way to do it) */
     for (i = 0; i < (sizeof sct_round_str / sizeof sct_round_str[0]); i++)
     {
-        lbl = gtk_label_new(sct_round_str[i]);
-        gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+        lbl = gui_label_new(sct_round_str[i], 0, 0.5);
         gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
     }
 
@@ -589,34 +583,34 @@ static void settings_float_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(settings_float_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_settings_float), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_settings_float), vbox);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_float_digits(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_random_num(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_sct_rounding(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     // OK and Cancel buttons
 
-    hbox_but = gtk_hbox_new(FALSE, 0);
+    hbox_but = gui_hbox_new(TRUE, 0);
     button = gtk_button_new_with_mnemonic("_OK");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_float_ok_button_clicked), NULL);
 
     button = gtk_button_new_with_mnemonic("_Cancel");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_float_cancel_button_clicked), NULL);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_but, FALSE, FALSE, 10);
@@ -694,10 +688,9 @@ static void add_integer_width_group(GtkWidget *vbox)
 
     integer_width = config_get_integer_width();
 
-    hbox = gtk_hbox_new(TRUE, 0);
+    hbox = gui_hbox_new(TRUE, 0);
 
-    lbl = gtk_label_new("Integer width at startup");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Integer width at startup", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     for (int i = 0; i < num_calc_widths; i++)
@@ -755,10 +748,9 @@ static void add_signed_unsigned_group(GtkWidget *vbox)
 
     use_unsigned = config_get_use_unsigned();
 
-    hbox = gtk_hbox_new(TRUE, 0);
+    hbox = gui_hbox_new(TRUE, 0);
 
-    lbl = gtk_label_new("Signed or unsigned at startup");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Signed or unsigned at startup", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     for (i = 0; i < NUM_INT_SIGNED_RB; i++)
@@ -822,8 +814,7 @@ static void add_hex_group(GtkWidget *vbox)
 
     hex_group = config_get_hex_grouping();
 
-    lbl = gtk_label_new("Grouping for numbers when displayed in hex");
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
+    lbl = gui_label_new("Grouping for numbers when displayed in hex", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     /* radio buttons */
@@ -927,42 +918,42 @@ static void settings_int_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(settings_int_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_settings_int), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_settings_int), vbox);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_integer_width_group(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_signed_unsigned_group(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_hex_group(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_warn_signed_overflow(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     add_warn_unsigned_overflow(vbox);
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     // OK and Cancel buttons
 
-    hbox_but = gtk_hbox_new(FALSE, 0);
+    hbox_but = gui_hbox_new(TRUE, 0);
     button = gtk_button_new_with_mnemonic("_OK");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_int_ok_button_clicked), NULL);
 
     button = gtk_button_new_with_mnemonic("_Cancel");
-    gtk_container_add(GTK_CONTAINER(hbox_but), button);
+    gtk_box_pack_start(GTK_BOX(hbox_but), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked",
         G_CALLBACK(settings_int_cancel_button_clicked), NULL);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_but, FALSE, FALSE, 10);

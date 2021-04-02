@@ -2,7 +2,9 @@ Currently the program must be built from source, so assume a working gcc C compi
 
 cd into the src directory.
 There is a simple but functional Makefile.
-Just run 'make' (without the quotes of course) from within the src directory.
+The code can be built to use with GTK2 or GTK3, as determined at the top of the Makefile,
+leave as GTK_VERSION = 2 for GTK2, change it to GTK_VERSION = 3 for GTK3.
+Then just run 'make' (without the quotes of course) from within the src directory.
 It should build without warnings.
 
 The build artefacts, including the executable 'progandscicalc', will be placed under a dir called 'build'
@@ -15,6 +17,7 @@ Running 'make clean' will remove all build artefacts.
 
 Dependencies
 ============
-Requires GTK2 libraries, including the gtk2 dev lib (on xubuntu system
-this was package libgtk2.0-dev).
+Requires GTK2 or GTK3 libraries, including the gtk2 or gtk3 dev lib (on xubuntu
+system this was package libgtk2.0-dev for GTK2, broadly similar for GTK3).
+Essentially, whatever you need to build a GTK program from source.
 

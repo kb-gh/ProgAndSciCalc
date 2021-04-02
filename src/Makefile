@@ -17,6 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# set to either 2 (build for GTK2) or 3 (build for GTK3)
+GTK_VERSION = 2
 
 PROG = progandscicalc
 
@@ -24,12 +26,12 @@ SRCS = main.c gui.c gui_menu.c display.c display_widget.c \
        calc.c calc_integer.c calc_float.c calc_util.c config.c \
        display_print.c gui_menu_options.c gui_menu_help.c \
        gui_menu_conversion.c calc_conversion.c \
-       gui_menu_constants.c gui_history.c
+       gui_menu_constants.c gui_history.c gui_util.c
 		
 
 HDRS = gui.h gui_internal.h display.h display_widget.h calc.h \
        calc_internal.h calc_types.h config.h display_print.h \
-       calc_conversion.h
+       calc_conversion.h gui_util.h
 
 # place all build output under this directory
 BUILD_DIR = build
@@ -52,7 +54,7 @@ DN_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(DN_SRCS))
 PROG_TARGET = $(BUILD_DIR)/$(PROG)
 
 CC       = gcc
-CPPFLAGS =
+CPPFLAGS = -DTARGET_GTK_VERSION=$(GTK_VERSION)
 CFLAGS   = -std=c99 -O2 -Wall -Wextra -Wmissing-prototypes -fwrapv
 LDFLAGS  =
 
@@ -60,7 +62,7 @@ LDFLAGS  =
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(BUILD_DIR)/$(DN_DIR)
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) `pkg-config --cflags gtk+-2.0` $< -o $@
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) `pkg-config --cflags gtk+-$(GTK_VERSION).0` $< -o $@
 
 ##############################################################################
 
@@ -68,7 +70,7 @@ all:    $(PROG_TARGET)
 
 
 $(PROG_TARGET): $(OBJS) $(DN_OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) $(DN_OBJS) `pkg-config --libs gtk+-2.0` -lm -o $@
+	$(CC) $(LDFLAGS) $(OBJS) $(DN_OBJS) `pkg-config --libs gtk+-$(GTK_VERSION).0` -lm -o $@
 
 
 # will rebuild everything if any header is changed, that'll do

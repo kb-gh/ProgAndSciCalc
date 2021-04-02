@@ -64,7 +64,12 @@ static int num_rows;
 /* store the category */
 static ucv_enum current_category;
 
+/* To change font properties of the label on the selected row */
+#if TARGET_GTK_VERSION == 2
 static const GdkColor col_selected = {0, 0xd000, 0x0000, 0x0000};
+#elif TARGET_GTK_VERSION == 3
+static GtkCssProvider *css_provider;
+#endif
 
 #define MAX_BUF_LEN 80
 
@@ -72,6 +77,11 @@ static void conversion_destroy(GtkWidget *widget, gpointer data)
 {
     (void)widget;
     (void)data;
+
+#if TARGET_GTK_VERSION == 3
+    g_object_unref(css_provider);
+    css_provider = NULL;
+#endif
 
     window_conversion = NULL;
 }
@@ -88,12 +98,22 @@ static void cancel_button_clicked(GtkWidget *widget, gpointer data)
 
 static void set_entry_col_normal(GtkWidget *lbl)
 {
+#if TARGET_GTK_VERSION == 2
     gtk_widget_modify_text(lbl, GTK_STATE_NORMAL, NULL);
+#elif TARGET_GTK_VERSION == 3
+    GtkStyleContext *context = gtk_widget_get_style_context(lbl);
+    gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER(css_provider));
+#endif
 }
 
 static void set_entry_col_selected(GtkWidget *lbl)
 {
+#if TARGET_GTK_VERSION == 2
     gtk_widget_modify_text(lbl, GTK_STATE_NORMAL, &col_selected);
+#elif TARGET_GTK_VERSION == 3
+    GtkStyleContext *context = gtk_widget_get_style_context(lbl);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#endif
 }
 
 static void update_all_entry_values(void)
@@ -188,7 +208,13 @@ static GtkWidget *create_table(ucv_enum category)
         num_rows = MAX_CONVERSION_ROWS;
     }
 
+#if TARGET_GTK_VERSION == 2
     table = gtk_table_new(num_rows, 2, TRUE);
+#elif TARGET_GTK_VERSION == 3
+    table = gtk_grid_new();
+    gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+    gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+#endif
 
     for (row = 0; row < num_rows; row++)
     {
@@ -203,14 +229,22 @@ static GtkWidget *create_table(ucv_enum category)
             group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
             button = gtk_radio_button_new_with_label(group, buf);
         }
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), button,
                                   0, 1, row, row+1);
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), button, 0, row, 1, 1);
+#endif
 
         /* entry to display values */
         calc_conversion_get_value(category, row, buf, MAX_BUF_LEN);
         entry = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(entry), buf);
+#if TARGET_GTK_VERSION == 2
         gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
+#elif TARGET_GTK_VERSION == 3
+        gtk_editable_set_editable(GTK_EDITABLE(entry), FALSE);
+#endif
         gtk_entry_set_max_length(GTK_ENTRY(entry), TEXT_LEN);
         gtk_entry_set_width_chars(GTK_ENTRY(entry), TEXT_LEN);
         /* want to return value to calc either by clicking mouse on the value
@@ -222,8 +256,12 @@ static GtkWidget *create_table(ucv_enum category)
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
                          G_CALLBACK(entry_button_release), (gpointer)&row_cb[row]);
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   1, 2, row, row+1);
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), entry, 1, row, 1, 1);
+#endif
 
         /* store entry pointer */
         value_entries[row] = entry;
@@ -256,6 +294,11 @@ static void ucv_activate(GtkWidget *widget, gpointer data)
         return;
     }
 
+#if TARGET_GTK_VERSION == 3
+    css_provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(css_provider, "*{font: italic; color: #d00000}", -1, NULL);
+#endif
+
     /* The conversion routine will take the current calc top of stack as the
      * value to be converted. The user, however, may have entered a value
      * which has yet to be passed into calc, in which case pass it in now. */
@@ -279,19 +322,18 @@ static void ucv_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(conversion_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_conversion), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_conversion), vbox);
 
     /* Add description label */
-    label = gtk_label_new("Click on a value to return that value to the calculator");
+    label = gui_label_new("Click on a value to return that value to the calculator", 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     /* Add 'convert from' label */
-    label = gtk_label_new("Select 'Convert From' Units");
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    label = gui_label_new("Select 'Convert From' Units", 0, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     /* Add the table */
@@ -299,13 +341,18 @@ static void ucv_activate(GtkWidget *widget, gpointer data)
     gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 5);
 
     /* Cancel button */
-    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     button = gtk_button_new_with_mnemonic("_Cancel");
     g_signal_connect(button, "clicked",
         G_CALLBACK(cancel_button_clicked), NULL);
     gtk_widget_set_size_request(button, 80, -1);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     gtk_container_add(GTK_CONTAINER(align), button);
     gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(button, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 10);
+#endif
 
     gtk_widget_show_all(window_conversion);
 }

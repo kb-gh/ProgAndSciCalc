@@ -1,7 +1,7 @@
 # ProgAndSciCalc
 ~~~
 Dual mode calculator, Integer (Programmer) mode, and Floating (Scientific) mode.
-Written in C. Uses GTK2 for GUI.
+Written in C. Uses GTK2 or GTK3 (select at build time) for GUI.
 
 MODE
 Integer  - Performs operations on integers, 8, 16, 32 or 64 bits, signed or unsigned.

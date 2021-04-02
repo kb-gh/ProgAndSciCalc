@@ -123,7 +123,13 @@ static GtkWidget *create_table_int(void)
     /* 20 digits dec, 16 + 2 hex, 2 spaces, 2 brackets, this size is enough */
     char buf[50];
 
+#if TARGET_GTK_VERSION == 2
     table = gtk_table_new(HISTORY_MAX_ITEMS, 1, TRUE);
+#elif TARGET_GTK_VERSION == 3
+    table = gtk_grid_new();
+    gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+    gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+#endif
 
     for (row = 0; row < HISTORY_MAX_ITEMS; row++)
     {
@@ -140,7 +146,11 @@ static GtkWidget *create_table_int(void)
                     (int64_t)history_ival_copy[row].ival, history_ival_copy[row].ival);
         }
         gtk_entry_set_text(GTK_ENTRY(entry), buf);
+#if TARGET_GTK_VERSION == 2
         gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
+#elif TARGET_GTK_VERSION == 3
+        gtk_editable_set_editable(GTK_EDITABLE(entry), FALSE);
+#endif
         gtk_entry_set_max_length(GTK_ENTRY(entry), TEXT_LEN_INT);
         gtk_entry_set_width_chars(GTK_ENTRY(entry), TEXT_LEN_INT);
         /* want to return value to calc either by clicking mouse on the value
@@ -151,8 +161,12 @@ static GtkWidget *create_table_int(void)
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
                          G_CALLBACK(entry_button_release_int), (gpointer)&row_cb[row]);
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   0, 1, row, row+1);
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), entry, 0, row, 1, 1);
+#endif
     }
 
     return table;
@@ -208,11 +222,11 @@ static void history_open_int(void)
     gtk_container_set_border_width(GTK_CONTAINER(window_hist_int), 10);
 
     /* main vbox */
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_hist_int), vbox);
 
     /* vbox for table, scrolled */
-    vbox_table = gtk_vbox_new(FALSE, 0);
+    vbox_table = gui_vbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox_table), 10);
 
     scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -221,26 +235,35 @@ static void history_open_int(void)
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
     /* Add description label */
-    label = gtk_label_new(click_val_msg);
+    label = gui_label_new(click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     /* Add the table */
     table = create_table_int();
     gtk_box_pack_start(GTK_BOX(vbox_table), table, TRUE, TRUE, 5);
+#if TARGET_GTK_VERSION == 2
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled), vbox_table);
+#elif TARGET_GTK_VERSION == 3
+    gtk_container_add(GTK_CONTAINER(scrolled), vbox_table);
+#endif
     gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
 
     /* Cancel button */
-    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     button = gtk_button_new_with_mnemonic("_Cancel");
     g_signal_connect(button, "clicked",
         G_CALLBACK(cancel_button_clicked_int), NULL);
     gtk_widget_set_size_request(button, 80, -1);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     gtk_container_add(GTK_CONTAINER(align), button);
     gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(button, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 10);
+#endif
 
     gtk_widget_show_all(window_hist_int);
 }
@@ -355,7 +378,13 @@ static GtkWidget *create_table_float(void)
     GtkWidget *entry;
     char buf[DFP_STRING_MAX];
 
+#if TARGET_GTK_VERSION == 2
     table = gtk_table_new(HISTORY_MAX_ITEMS, 1, TRUE);
+#elif TARGET_GTK_VERSION == 3
+    table = gtk_grid_new();
+    gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+    gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+#endif
 
     for (row = 0; row < HISTORY_MAX_ITEMS; row++)
     {
@@ -365,7 +394,11 @@ static GtkWidget *create_table_float(void)
         display_print_gmode(buf, history_fval_copy[row], MAX_FLOAT_DIGITS_HIST);
 
         gtk_entry_set_text(GTK_ENTRY(entry), buf);
+#if TARGET_GTK_VERSION == 2
         gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
+#elif TARGET_GTK_VERSION == 3
+        gtk_editable_set_editable(GTK_EDITABLE(entry), FALSE);
+#endif
         gtk_entry_set_max_length(GTK_ENTRY(entry), TEXT_LEN_FLOAT);
         gtk_entry_set_width_chars(GTK_ENTRY(entry), TEXT_LEN_FLOAT);
         /* want to return value to calc either by clicking mouse on the value
@@ -376,8 +409,12 @@ static GtkWidget *create_table_float(void)
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
                          G_CALLBACK(entry_button_release_float), (gpointer)&row_cb[row]);
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   0, 1, row, row+1);
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), entry, 0, row, 1, 1);
+#endif
     }
 
     return table;
@@ -433,11 +470,11 @@ static void history_open_float(void)
     gtk_container_set_border_width(GTK_CONTAINER(window_hist_float), 10);
 
     /* main vbox */
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_hist_float), vbox);
 
     /* vbox for table, scrolled */
-    vbox_table = gtk_vbox_new(FALSE, 0);
+    vbox_table = gui_vbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox_table), 10);
 
     scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -446,26 +483,35 @@ static void history_open_float(void)
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
     /* Add description label */
-    label = gtk_label_new(click_val_msg);
+    label = gui_label_new(click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     /* Add the table */
     table = create_table_float();
     gtk_box_pack_start(GTK_BOX(vbox_table), table, TRUE, TRUE, 5);
+#if TARGET_GTK_VERSION == 2
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled), vbox_table);
+#elif TARGET_GTK_VERSION == 3
+    gtk_container_add(GTK_CONTAINER(scrolled), vbox_table);
+#endif
     gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
 
     /* Cancel button */
-    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     button = gtk_button_new_with_mnemonic("_Cancel");
     g_signal_connect(button, "clicked",
         G_CALLBACK(cancel_button_clicked_float), NULL);
     gtk_widget_set_size_request(button, 80, -1);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     gtk_container_add(GTK_CONTAINER(align), button);
     gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(button, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 10);
+#endif
 
     gtk_widget_show_all(window_hist_float);
 }

@@ -25,7 +25,7 @@ GtkWidget *create_menu(void)
     GtkWidget *menu_vbox;
     GtkWidget *menubar;
 
-    menu_vbox = gtk_vbox_new(FALSE, 0);
+    menu_vbox = gui_vbox_new(FALSE, 0);
     menubar = gtk_menu_bar_new();
 
     /* Options */

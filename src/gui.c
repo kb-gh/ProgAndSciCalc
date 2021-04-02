@@ -764,9 +764,17 @@ static GtkWidget *create_6by3_button_table(const button_info binfo[][BT_COLS])
 
     int but_height = config_get_but_height();
 
+#if TARGET_GTK_VERSION == 2
     table = gtk_table_new(BT_ROWS, BT_COLS, TRUE);
     gtk_table_set_row_spacings(GTK_TABLE(table), 4);
     gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+#elif TARGET_GTK_VERSION == 3
+    table = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(table), 4);
+    gtk_grid_set_column_spacing(GTK_GRID(table), 4);
+    gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+    gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+#endif
 
     for (int i = 0; i < BT_ROWS; i++)
     {
@@ -791,8 +799,13 @@ static GtkWidget *create_6by3_button_table(const button_info binfo[][BT_COLS])
                                      G_CALLBACK(button_click), (gpointer)&binfo[i][j]);
                 }
 
+#if TARGET_GTK_VERSION == 2
                 gtk_table_attach_defaults(GTK_TABLE(table), button,
                                           left, right, top, bot);
+#elif TARGET_GTK_VERSION == 3
+                gtk_grid_attach(GTK_GRID(table), button,
+                                left, top, right - left, bot - top);
+#endif
                 gtk_widget_set_size_request(button, -1, but_height);
                 gtk_widget_show(button);
                 but_grid[binfo[i][j].id] = button;
@@ -1176,13 +1189,12 @@ static void add_integer_width_rb(GtkWidget *hbox)
     int i;
 
     /* Create another hbox for the widths */
-    GtkWidget *hbox_w = gtk_hbox_new(TRUE, 0);
+    GtkWidget *hbox_w = gui_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), hbox_w, FALSE, FALSE, 0);
     gtk_widget_show(hbox_w);
 
-    GtkWidget *lbl = gtk_label_new("Width");
+    GtkWidget *lbl = gui_label_new("Width", 0, 0.5);
     gtk_widget_show(lbl);
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(hbox_w), lbl, FALSE, FALSE, 0);
 
     for (i = 0; i < num_calc_widths; i++)
@@ -1205,11 +1217,7 @@ static void add_integer_width_rb(GtkWidget *hbox)
 
     /* some faffing around to push signed/unsigned buttons over to the
      * right hand side */
-    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
-    gtk_widget_show(align);
-    GtkWidget *hbox_su = gtk_hbox_new(TRUE, 0);
-    gtk_widget_show(hbox_su);
-    gtk_container_add(GTK_CONTAINER(align), hbox_su);
+    GtkWidget *hbox_su = gui_hbox_new(TRUE, 0);
 
     for (i = 0; i < NUM_INT_SIGNED_RB; i++)
     {
@@ -1227,7 +1235,16 @@ static void add_integer_width_rb(GtkWidget *hbox)
         gtk_box_pack_start(GTK_BOX(hbox_su), button, FALSE, FALSE, 10);
         rbut_int_signed[i] = button;
     }
+    gtk_widget_show(hbox_su);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
+    gtk_widget_show(align);
+    gtk_container_add(GTK_CONTAINER(align), hbox_su);
     gtk_box_pack_start(GTK_BOX(hbox), align, TRUE, TRUE, 0);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(hbox_su, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(hbox), hbox_su, TRUE, TRUE, 0);
+#endif
 }
 
 /* Callback for float digits radio buttons */
@@ -1258,9 +1275,8 @@ static void add_float_digits_rb(GtkWidget *hbox)
     GSList *group = NULL;
     int i;
 
-    GtkWidget *lbl = gtk_label_new("Digits");
+    GtkWidget *lbl = gui_label_new("Digits", 0, 0.5);
     gtk_widget_show(lbl);
-    gtk_misc_set_alignment(GTK_MISC(lbl), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
 
     for (i = 0; i < NUM_FLOAT_DIGITS_ID; i++)
@@ -1321,7 +1337,7 @@ static void gui_recreate(void)
     gui_created = false;
 
     /* Outer vbox */
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_main), vbox);
     gtk_widget_show(vbox);
 
@@ -1329,7 +1345,7 @@ static void gui_recreate(void)
     gtk_box_pack_start(GTK_BOX(vbox), create_menu(), FALSE, FALSE, 0);
 
     /* Add hbox_display into outer vbox */
-    hbox_display = gtk_hbox_new(FALSE, 0);
+    hbox_display = gui_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_display, FALSE, FALSE, 4);
     gtk_widget_show(hbox_display);
 
@@ -1345,13 +1361,13 @@ static void gui_recreate(void)
 
 
     /* Add separator into outer vbox */
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 4);
     gtk_widget_show(separator);
 
 
     /* Add hbox_buttons into outer vbox */
-    hbox_buttons = gtk_hbox_new(TRUE, 0);
+    hbox_buttons = gui_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_buttons, TRUE, TRUE, 0);
     gtk_widget_show(hbox_buttons);
 
@@ -1379,13 +1395,13 @@ static void gui_recreate(void)
 
 
     /* Add another separator into outer vbox */
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 4);
     gtk_widget_show(separator);
 
 
     /* Add hbox_status into outer vbox */
-    hbox_status = gtk_hbox_new(TRUE, 0);
+    hbox_status = gui_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox_status, FALSE, FALSE, 0);
     gtk_widget_show(hbox_status);
 
@@ -1398,45 +1414,50 @@ static void gui_recreate(void)
     gtk_widget_show(chk_repeat_eq);
 
     /* Add a status label into hbox_status */
-    lbl_status = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(lbl_status), 0.5, 0.5);
+    lbl_status = gui_label_new(NULL, 0.5, 0.5);
     gtk_widget_show(lbl_status);
     gtk_box_pack_start(GTK_BOX(hbox_status), lbl_status, TRUE, TRUE, 0);
 
     /* Create another hbox for pending_bin_op and M1/M2 labels, and
      * add into hbox_status */
-    hbox_pending_mem = gtk_hbox_new(TRUE, 0);
+    hbox_pending_mem = gui_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox_status), hbox_pending_mem, TRUE, TRUE, 0);
     gtk_widget_show(hbox_pending_mem);
 
     /* Add a pending_bin_op label into hbox_pending_mem (indicates the pending
      * bin op at the top of stack, if any) */
-    lbl_pending_bin_op = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(lbl_pending_bin_op), 0.5, 0.5);
-    char font_str[40];
-    sprintf(font_str, "mono bold %d", 12);
+    lbl_pending_bin_op = gui_label_new(NULL, 0.5, 0.5);
+#if TARGET_GTK_VERSION == 2
     PangoFontDescription *pfd =
-        pango_font_description_from_string(font_str);
+        pango_font_description_from_string("mono bold 12");
     gtk_widget_modify_font(lbl_pending_bin_op, pfd);
     pango_font_description_free(pfd);
+#elif TARGET_GTK_VERSION == 3
+    GtkCssProvider *provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(provider, "*{font: mono bold 12;}", -1, NULL);
+    GtkStyleContext *lbl_context = gtk_widget_get_style_context(lbl_pending_bin_op);
+    gtk_style_context_add_provider(lbl_context,
+                                   GTK_STYLE_PROVIDER(provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_USER);
+    g_object_unref(provider);
+#endif
     gtk_widget_show(lbl_pending_bin_op);
     gtk_box_pack_start(GTK_BOX(hbox_pending_mem), lbl_pending_bin_op, TRUE, TRUE, 0);
 
     /* Add a M1/M2 label into hbox_pending_mem (indicates when non zero value
      * stored in memories) */
-    lbl_mem = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(lbl_mem), 1.0, 0.5);
+    lbl_mem = gui_label_new(NULL, 1.0, 0.5);
     gtk_widget_show(lbl_mem);
     gtk_box_pack_start(GTK_BOX(hbox_pending_mem), lbl_mem, TRUE, TRUE, 0);
 
 
     /* Add another separator into outer vbox */
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 4);
     gtk_widget_show(separator);
 
     /* Add hbox_digits_width (float digits or integer width) into outer vbox */
-    hbox_digits_width = gtk_hbox_new(FALSE, 0);
+    hbox_digits_width = gui_hbox_new(FALSE, 0);
     gtk_widget_show(hbox_digits_width);
 
     /* Add either float digits or integer width radio buttons into

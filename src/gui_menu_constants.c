@@ -122,23 +122,36 @@ static GtkWidget *create_table(int category)
     cat_info_t *cat = cat_table[category];
     num_rows = cat->num_rows;
 
+#if TARGET_GTK_VERSION == 2
     table = gtk_table_new(num_rows, 2, FALSE);
+#elif TARGET_GTK_VERSION == 3
+    table = gtk_grid_new();
+    gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+    gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+#endif
 
     /* main table rows */
     for (row = 0; row < num_rows; row++)
     {
         /* label for name */
-        label = gtk_label_new(cat->row_name[row]);
+        label = gui_label_new(cat->row_name[row], 0.5, 0.5);
         gtk_label_set_width_chars(GTK_LABEL(label), NAME_DISPLAY_TEXT_LEN);
         gtk_label_set_max_width_chars(GTK_LABEL(label), NAME_DISPLAY_TEXT_LEN);
-        gtk_misc_set_alignment(GTK_MISC(label), 0.5, 0.5);
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), label,
                                   0, 1, row, row+1);
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), label, 0, row, 1, 1);
+#endif
 
         /* entry for value */
         entry = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(entry), cat->row_val[row]);
+#if TARGET_GTK_VERSION == 2
         gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
+#elif TARGET_GTK_VERSION == 3
+        gtk_editable_set_editable(GTK_EDITABLE(entry), FALSE);
+#endif
         gtk_entry_set_max_length(GTK_ENTRY(entry), VALUE_DISPLAY_TEXT_LEN);
         gtk_entry_set_width_chars(GTK_ENTRY(entry), VALUE_DISPLAY_TEXT_LEN);
         /* want to return value to calc either by clicking mouse on the value
@@ -150,9 +163,12 @@ static GtkWidget *create_table(int category)
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
                          G_CALLBACK(entry_button_release),(gpointer)&row_cb[row]);
+#if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   1, 2, row, row+1);
-
+#elif TARGET_GTK_VERSION == 3
+        gtk_grid_attach(GTK_GRID(table), entry, 1, row, 1, 1);
+#endif
     }
 
     return table;
@@ -191,14 +207,14 @@ static void constants_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(constants_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_constants), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_constants), vbox);
 
     /* Add description label */
-    label = gtk_label_new("Click on a value to return that value to the calculator");
+    label = gui_label_new("Click on a value to return that value to the calculator", 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-    separator = gtk_hseparator_new();
+    separator = gui_hseparator_new();
     gtk_box_pack_start(GTK_BOX(vbox), separator, FALSE, FALSE, 5);
 
     /* add the table */
@@ -206,13 +222,18 @@ static void constants_activate(GtkWidget *widget, gpointer data)
     gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 5);
 
     /* Cancel button */
-    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     button = gtk_button_new_with_mnemonic("_Cancel");
     g_signal_connect(button, "clicked",
         G_CALLBACK(cancel_button_clicked), NULL);
     gtk_widget_set_size_request(button, 80, -1);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
     gtk_container_add(GTK_CONTAINER(align), button);
     gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(button, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 10);
+#endif
 
     gtk_widget_show_all(window_constants);
 }

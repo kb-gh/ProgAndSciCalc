@@ -25,6 +25,7 @@
 #include "config.h"
 #include "calc.h"
 #include "gui.h"
+#include "gui_util.h"
 
 static GtkWidget *display;
 static GtkWidget *bin_display_top;
@@ -270,22 +271,30 @@ static gboolean button_press_bot(GtkWidget *widget, GdkEventButton *event,
 GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
 {
     GtkWidget *vbox;
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_widget_show(vbox);
 
     char font_str[40];
 
     /* main display */
-    display = gtk_label_new(main_msg);
-    gtk_misc_set_alignment(GTK_MISC(display), 1.0, 0.5);
+    display = gui_label_new(main_msg, 1.0, 0.5);
     gtk_widget_show(display);
     gtk_box_pack_start(GTK_BOX(vbox), display, FALSE, FALSE, 0);
 
+#if TARGET_GTK_VERSION == 2
     sprintf(font_str, "mono bold %d", config_get_main_disp_fontsize());
     PangoFontDescription *pfd =
         pango_font_description_from_string(font_str);
     gtk_widget_modify_font(display, pfd);
     pango_font_description_free(pfd);
+#elif TARGET_GTK_VERSION == 3
+    sprintf(font_str, "*{font: mono bold %d;}", config_get_main_disp_fontsize());
+    GtkCssProvider *provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(provider, font_str, -1, NULL);
+    GtkStyleContext *context = gtk_widget_get_style_context(display);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    g_object_unref(provider);
+#endif
 
     /* secondary binary display */
     if (bin_msg == NULL)
@@ -295,8 +304,7 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     gtk_event_box_set_above_child(GTK_EVENT_BOX(top_eventbox), TRUE);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(top_eventbox), FALSE);
 
-    bin_display_top = gtk_label_new(bin_msg);
-    gtk_misc_set_alignment(GTK_MISC(bin_display_top), 1.0, 0.5);
+    bin_display_top = gui_label_new(bin_msg, 1.0, 0.5);
     gtk_widget_show(bin_display_top);
     gtk_widget_show(top_eventbox);
 
@@ -308,20 +316,29 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     gtk_event_box_set_above_child(GTK_EVENT_BOX(bot_eventbox), TRUE);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(bot_eventbox), FALSE);
 
-    bin_display_bot = gtk_label_new(bin_msg);
-    gtk_misc_set_alignment(GTK_MISC(bin_display_bot), 1.0, 0.5);
+    bin_display_bot = gui_label_new(bin_msg, 1.0, 0.5);
     gtk_widget_show(bin_display_bot);
     gtk_widget_show(bot_eventbox);
 
     gtk_container_add(GTK_CONTAINER(bot_eventbox), bin_display_bot);
     gtk_box_pack_start(GTK_BOX(vbox), bot_eventbox, FALSE, FALSE, 0);
 
+#if TARGET_GTK_VERSION == 2
     sprintf(font_str, "mono %d", config_get_bin_disp_fontsize());
     pfd = pango_font_description_from_string(font_str);
     gtk_widget_modify_font(bin_display_top, pfd);
     gtk_widget_modify_font(bin_display_bot, pfd);
     pango_font_description_free(pfd);
-
+#elif TARGET_GTK_VERSION == 3
+    sprintf(font_str, "*{font: mono  %d;}", config_get_bin_disp_fontsize());
+    provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(provider, font_str, -1, NULL);
+    context = gtk_widget_get_style_context(bin_display_top);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    context = gtk_widget_get_style_context(bin_display_bot);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    g_object_unref(provider);
+#endif
 
     gtk_widget_add_events(top_eventbox,
                           GDK_BUTTON_PRESS_MASK |

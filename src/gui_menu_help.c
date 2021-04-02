@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.7"
+#define VERSION "2.8"
 
 extern GtkWidget *window_main;
 
@@ -232,7 +232,6 @@ static void instruct_activate(GtkWidget *widget, gpointer data)
     GtkWidget *vbox_instruct;
     GtkWidget *label;
     GtkWidget *scrolled;
-    GtkWidget *align;
     GtkWidget *button;
 
     if (window_instruct != NULL)
@@ -244,40 +243,62 @@ static void instruct_activate(GtkWidget *widget, gpointer data)
                      G_CALLBACK(instruct_destroy), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(window_instruct), 10);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gui_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window_instruct), vbox);
 
+#if TARGET_GTK_VERSION == 2
     PangoFontDescription *pfd =
         pango_font_description_from_string("mono");
+#elif TARGET_GTK_VERSION == 3
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(css_provider, "*{font: mono;}", -1, NULL);
+#endif
 
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_widget_set_size_request(scrolled, -1, 400);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-    vbox_instruct = gtk_vbox_new(FALSE, 0);
+    vbox_instruct = gui_vbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(vbox_instruct), 10);
     for (unsigned i = 0; i < sizeof(instructions) / sizeof(*instructions); i++)
     {
-        label = gtk_label_new(instructions[i]);
+        label = gui_label_new(instructions[i], 0, 0.5);
+#if TARGET_GTK_VERSION == 2
         gtk_widget_modify_font(label, pfd);
-        gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+#elif TARGET_GTK_VERSION == 3
+        GtkStyleContext *context = gtk_widget_get_style_context(label);
+        gtk_style_context_add_provider(context,
+                                       GTK_STYLE_PROVIDER(css_provider),
+                                       GTK_STYLE_PROVIDER_PRIORITY_USER);
+#endif
         gtk_box_pack_start(GTK_BOX(vbox_instruct), label, FALSE, FALSE, 10);
     }
+#if TARGET_GTK_VERSION == 2
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled), vbox_instruct);
+#elif TARGET_GTK_VERSION == 3
+    gtk_container_add(GTK_CONTAINER(scrolled), vbox_instruct);
+#endif
     gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
 
+#if TARGET_GTK_VERSION == 2
     pango_font_description_free(pfd);
+#elif TARGET_GTK_VERSION == 3
+    g_object_unref(css_provider);
+#endif
 
-
-    align = gtk_alignment_new(1, 0, 0, 0);
     button = gtk_button_new_with_mnemonic("_Close");
-    gtk_widget_set_size_request(button, 80, -1);
-    gtk_container_add(GTK_CONTAINER(align), button);
-    gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
-
     g_signal_connect(button, "clicked",
         G_CALLBACK(instruct_close_button_clicked), NULL);
+    gtk_widget_set_size_request(button, 80, -1);
+#if TARGET_GTK_VERSION == 2
+    GtkWidget *align = gtk_alignment_new(1, 0, 0, 0);
+    gtk_container_add(GTK_CONTAINER(align), button);
+    gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 10);
+#elif TARGET_GTK_VERSION == 3
+    gtk_widget_set_halign(button, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 10);
+#endif
 
     gtk_widget_show_all(window_instruct);
 }
