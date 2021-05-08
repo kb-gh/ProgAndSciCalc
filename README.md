@@ -193,6 +193,11 @@ Ctrl-V will paste from the default clipboard
 Ctrl-W will paste from the primary clipboard
 Pasted value is converted according to the current mode, and for Integer mode,
 according to whether display is set as DEC or HEX.
+
+
+FONT SIZES
+Various font sizes are configurable in Options->Settings, which hopefully
+allows a reasonable setup to be found across different systems.
 ~~~
 
 ![](screenshots/sci.png)

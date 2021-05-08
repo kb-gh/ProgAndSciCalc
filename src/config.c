@@ -39,6 +39,8 @@ static bool use_sct_rounding;
 /* fontsizes for the main and binary display */
 static int main_disp_fontsize;
 static int bin_disp_fontsize;
+/* fontsize for pending binary operator label */
+static int binop_lbl_fontsize;
 
 /* button height */
 static int but_height;
@@ -65,6 +67,7 @@ static const char *CONFIGFILE = "config";
 static const char *SETTINGS = "Settings";
 static const char *MAIN_FONTSIZE = "MainFontsize";
 static const char *BIN_FONTSIZE = "BinFontsize";
+static const char *BINOP_LBL_FONTSIZE = "BinOpLblFontsize";
 static const char *BUT_HEIGHT = "ButHeight";
 static const char *CALC_MODE = "CalcMode";
 static const char *HEX_GROUP = "HexGroup";
@@ -138,6 +141,13 @@ void config_init(void)
             bin_disp_fontsize = BIN_FONTSIZE_DEFAULT;
         }
 
+        binop_lbl_fontsize = get_integer(keyfile, SETTINGS, BINOP_LBL_FONTSIZE, BINOP_LBL_FONTSIZE_DEFAULT);
+        if (binop_lbl_fontsize < BINOP_LBL_FONTSIZE_MIN ||
+            binop_lbl_fontsize > BINOP_LBL_FONTSIZE_MAX)
+        {
+            binop_lbl_fontsize = BINOP_LBL_FONTSIZE_DEFAULT;
+        }
+
         but_height = get_integer(keyfile, SETTINGS, BUT_HEIGHT, BUT_HEIGHT_DEFAULT);
         if (but_height < BUT_HEIGHT_MIN ||
             but_height > BUT_HEIGHT_MAX)
@@ -200,6 +210,7 @@ void config_init(void)
         use_sct_rounding = true;
         main_disp_fontsize = MAIN_FONTSIZE_DEFAULT;
         bin_disp_fontsize = BIN_FONTSIZE_DEFAULT;
+        binop_lbl_fontsize = BINOP_LBL_FONTSIZE_DEFAULT;
         but_height = BUT_HEIGHT_DEFAULT;
         float_digits = FLOAT_DIGITS_DEFAULT;
         integer_width = INTEGER_WIDTH_DEFAULT;
@@ -232,6 +243,7 @@ void config_save(void)
     fprintf(fp, "[%s]\n", SETTINGS);
     fprintf(fp, "%s=%d\n", MAIN_FONTSIZE, main_disp_fontsize);
     fprintf(fp, "%s=%d\n", BIN_FONTSIZE, bin_disp_fontsize);
+    fprintf(fp, "%s=%d\n", BINOP_LBL_FONTSIZE, binop_lbl_fontsize);
     fprintf(fp, "%s=%d\n", BUT_HEIGHT, but_height);
     fprintf(fp, "%s=%d\n", CALC_MODE, (int)calc_mode);
     fprintf(fp, "%s=%d\n", HEX_GROUP, hex_grouping);
@@ -250,6 +262,7 @@ void config_save(void)
     GKeyFile *keyfile = g_key_file_new();
     g_key_file_set_integer(keyfile, SETTINGS, MAIN_FONTSIZE, main_disp_fontsize);
     g_key_file_set_integer(keyfile, SETTINGS, BIN_FONTSIZE, bin_disp_fontsize);
+    g_key_file_set_integer(keyfile, SETTINGS, BINOP_LBL_FONTSIZE, binop_lbl_fontsize);
     g_key_file_set_integer(keyfile, SETTINGS, BUT_HEIGHT, but_height);
     g_key_file_set_integer(keyfile, SETTINGS, CALC_MODE, (int)calc_mode);
     g_key_file_set_integer(keyfile, SETTINGS, HEX_GROUP, hex_grouping);
@@ -338,6 +351,16 @@ void config_set_bin_disp_fontsize(int fs)
 int config_get_bin_disp_fontsize(void)
 {
     return bin_disp_fontsize;
+}
+
+void config_set_binop_lbl_fontsize(int fs)
+{
+    binop_lbl_fontsize = fs;
+}
+
+int config_get_binop_lbl_fontsize(void)
+{
+    return binop_lbl_fontsize;
 }
 
 void config_set_but_height(int h)

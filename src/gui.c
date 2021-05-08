@@ -1427,14 +1427,17 @@ static void gui_recreate(void)
     /* Add a pending_bin_op label into hbox_pending_mem (indicates the pending
      * bin op at the top of stack, if any) */
     lbl_pending_bin_op = gui_label_new(NULL, 0.5, 0.5);
+    char font_str[100];
 #if TARGET_GTK_VERSION == 2
+    sprintf(font_str, "mono bold %d", config_get_binop_lbl_fontsize());
     PangoFontDescription *pfd =
-        pango_font_description_from_string("mono bold 12");
+        pango_font_description_from_string(font_str);
     gtk_widget_modify_font(lbl_pending_bin_op, pfd);
     pango_font_description_free(pfd);
 #elif TARGET_GTK_VERSION == 3
+    sprintf(font_str, "*{font-family: mono; font-weight: bold; font-size: %dpt;}", config_get_binop_lbl_fontsize());
     GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider, "*{font: mono bold 12;}", -1, NULL);
+    gtk_css_provider_load_from_data(provider, font_str, -1, NULL);
     GtkStyleContext *lbl_context = gtk_widget_get_style_context(lbl_pending_bin_op);
     gtk_style_context_add_provider(lbl_context,
                                    GTK_STYLE_PROVIDER(provider),

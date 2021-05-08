@@ -296,7 +296,7 @@ static void ucv_activate(GtkWidget *widget, gpointer data)
 
 #if TARGET_GTK_VERSION == 3
     css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, "*{font: italic; color: #d00000}", -1, NULL);
+    gtk_css_provider_load_from_data(css_provider, "*{font-style: italic; color: #d00000}", -1, NULL);
 #endif
 
     /* The conversion routine will take the current calc top of stack as the

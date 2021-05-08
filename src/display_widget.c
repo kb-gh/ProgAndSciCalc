@@ -274,7 +274,7 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     vbox = gui_vbox_new(FALSE, 0);
     gtk_widget_show(vbox);
 
-    char font_str[40];
+    char font_str[100];
 
     /* main display */
     display = gui_label_new(main_msg, 1.0, 0.5);
@@ -288,7 +288,7 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     gtk_widget_modify_font(display, pfd);
     pango_font_description_free(pfd);
 #elif TARGET_GTK_VERSION == 3
-    sprintf(font_str, "*{font: mono bold %d;}", config_get_main_disp_fontsize());
+    sprintf(font_str, "*{font-family: mono; font-weight: bold; font-size: %dpt;}", config_get_main_disp_fontsize());
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider, font_str, -1, NULL);
     GtkStyleContext *context = gtk_widget_get_style_context(display);
@@ -330,7 +330,7 @@ GtkWidget *display_widget_create(const char *main_msg, const char *bin_msg)
     gtk_widget_modify_font(bin_display_bot, pfd);
     pango_font_description_free(pfd);
 #elif TARGET_GTK_VERSION == 3
-    sprintf(font_str, "*{font: mono  %d;}", config_get_bin_disp_fontsize());
+    sprintf(font_str, "*{font-family: mono; font-size: %dpt;}", config_get_bin_disp_fontsize());
     provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider, font_str, -1, NULL);
     context = gtk_widget_get_style_context(bin_display_top);

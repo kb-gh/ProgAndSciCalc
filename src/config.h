@@ -25,13 +25,20 @@
 #include "gui.h"
 #include "calc.h"
 
+/* main display */
 #define MAIN_FONTSIZE_DEFAULT 22
-#define MAIN_FONTSIZE_MIN 16
-#define MAIN_FONTSIZE_MAX 32
+#define MAIN_FONTSIZE_MIN 6
+#define MAIN_FONTSIZE_MAX 40
 
+/* binary display */
 #define BIN_FONTSIZE_DEFAULT 12
-#define BIN_FONTSIZE_MIN 10
-#define BIN_FONTSIZE_MAX 18
+#define BIN_FONTSIZE_MIN 6
+#define BIN_FONTSIZE_MAX 40
+
+/* the label showing pending binary operator */
+#define BINOP_LBL_FONTSIZE_DEFAULT 12
+#define BINOP_LBL_FONTSIZE_MIN 6
+#define BINOP_LBL_FONTSIZE_MAX 30
 
 #define BUT_HEIGHT_DEFAULT 28
 #define BUT_HEIGHT_MIN 20
@@ -70,6 +77,9 @@ int config_get_main_disp_fontsize(void);
 
 void config_set_bin_disp_fontsize(int fs);
 int config_get_bin_disp_fontsize(void);
+
+void config_set_binop_lbl_fontsize(int fs);
+int config_get_binop_lbl_fontsize(void);
 
 void config_set_but_height(int h);
 int config_get_but_height(void);

@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "2.8"
+#define VERSION "2.9"
 
 extern GtkWidget *window_main;
 
@@ -251,7 +251,7 @@ static void instruct_activate(GtkWidget *widget, gpointer data)
         pango_font_description_from_string("mono");
 #elif TARGET_GTK_VERSION == 3
     GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, "*{font: mono;}", -1, NULL);
+    gtk_css_provider_load_from_data(css_provider, "*{font-family: mono;}", -1, NULL);
 #endif
 
     scrolled = gtk_scrolled_window_new(NULL, NULL);

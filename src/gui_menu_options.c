@@ -25,6 +25,7 @@
 static GtkWidget *window_settings;
 static GtkWidget *entry_fs_main;
 static GtkWidget *entry_fs_bin;
+static GtkWidget *entry_fs_binop_lbl;
 static GtkWidget *entry_but_height;
 static calc_mode_enum calc_mode;
 static bool replace_zero;
@@ -112,6 +113,11 @@ static void settings_ok_button_clicked(GtkWidget *widget, gpointer data)
                        BIN_FONTSIZE_MAX,
                        BIN_FONTSIZE_DEFAULT);
     config_set_bin_disp_fontsize(fs);
+    fs = get_entry_val(entry_fs_binop_lbl,
+                       BINOP_LBL_FONTSIZE_MIN,
+                       BINOP_LBL_FONTSIZE_MAX,
+                       BINOP_LBL_FONTSIZE_DEFAULT);
+    config_set_binop_lbl_fontsize(fs);
     fs = get_entry_val(entry_but_height,
                        BUT_HEIGHT_MIN,
                        BUT_HEIGHT_MAX,
@@ -164,6 +170,19 @@ static void add_fontsize(GtkWidget *vbox)
     gtk_entry_set_text(GTK_ENTRY(entry_fs_bin), buf);
     gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), entry_fs_bin, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+    hbox = gui_hbox_new(FALSE, 4);
+    sprintf(msg, "pending binary operator label fontsize (%d to %d, default %d)",
+            BINOP_LBL_FONTSIZE_MIN, BINOP_LBL_FONTSIZE_MAX, BINOP_LBL_FONTSIZE_DEFAULT);
+    lbl = gui_label_new(msg, 0.5, 0.5);
+    entry_fs_binop_lbl = gtk_entry_new();
+    gtk_entry_set_max_length(GTK_ENTRY(entry_fs_binop_lbl), FS_TEXT_LEN);
+    gtk_entry_set_width_chars(GTK_ENTRY(entry_fs_binop_lbl), FS_TEXT_LEN);
+    sprintf(buf, "%d", config_get_binop_lbl_fontsize());
+    gtk_entry_set_text(GTK_ENTRY(entry_fs_binop_lbl), buf);
+    gtk_box_pack_start(GTK_BOX(hbox), lbl, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), entry_fs_binop_lbl, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
     hbox = gui_hbox_new(FALSE, 4);
