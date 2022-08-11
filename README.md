@@ -22,8 +22,8 @@ limitations, is passed on when switching mode, see Mode Change section further d
 
 
 DIRECTORY FOR CONFIG AND CONSTANTS FILES
-If you want the calculator to save configuration settings (otherwise it will always start
-up with default configuration), you need to create a directory .ProgAndSciCalc under your
+If you want the calculator to save configuration settings, otherwise it will always start
+up with default configuration, you need to create a directory .ProgAndSciCalc under your
 home directory. The calculator will then create a config file under this location ie.
   ~/.ProgAndSciCalc/config
 This is also the location where you can optionally place a constants file (described in
@@ -46,11 +46,12 @@ left/right shift has the same precedence as MUL_DIV.
 gcd has the same precedence as MUL_DIV.
 and/or/xor have the same precedence as ADD_SUB.
 
-Repeated Equals checkbox
- If checked, each time [=] is entered it will re-evaluate the last binary operator
- For example :-
+Repeated Eval checkbox (NOTE in the screenshots this has the old name of Repeated Equals)
+ If checked, each time [=] is entered it will re-evaluate the last binary operator,
+ this lasts up until CLR is entered eg.
   10 + 2 = 12 = 14 = 16,  3 = 5,  7 = 9
-  also can do eg.
+ it also affects what happens if [=] is entered immediately after a binary operator
+ without a unary operator in between eg.
   10 + = 20 = 30 = 40
   10 + 3 * = 19 = 28 = 37
  compared to when unchecked
@@ -99,7 +100,7 @@ MISCELLANEOUS
 
 
 KEYBOARD SHORTCUTS
-Some of the more common functions are mapped to keyboard shortcuts, case insensitive.
+Most functions (a few are missed out) are mapped to keyboard shortcuts, case insensitive.
   Button                Shortcut
 ---------------------------------------
  0-9, A-F, point       themselves
@@ -109,20 +110,43 @@ Some of the more common functions are mapped to keyboard shortcuts, case insensi
   <---                  BACKSPACE
   MODE                     m
    +/-                     p
-   DEC                     z
-   HEX                     x
-   EXP                     e
-   INV                     i
-   F-E                     f
   HIST                     h
    ()                  themselves
+   sqr                     q
+   mod                     %
+ Repeated Eval             r
+
+   INV                     i
+   F-E                     f
+   EXP                     e
+   pow                     w
+   root                    o
+   log                     l
+   ln                      n
+   1/x                     d
+   sin                     s
+   cos                     c
+   tan                     t
+   PI                    ctrl-p
+   sqrt                  ctrl-q
+
+   DEC                     z
+   HEX                     x
  unsigned                  u
   signed                   s
+   <<                      <
+   >>                      >
+   <<n                   ctrl-<
+   >>n                   ctrl->
+   and                     &
+   or                      |
+   xor                     ^
+   gcd                     g
+   not                     n
  width 8                 ctrl-1
  width 16                ctrl-2
  width 32                ctrl-3
  width 64                ctrl-4
- Repeated Equals           r
 
 It is possible to access other buttons from keyboard by using cursor keys to highlight
 the chosen button then pressing SPACEBAR.

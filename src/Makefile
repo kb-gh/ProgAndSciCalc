@@ -55,7 +55,7 @@ PROG_TARGET = $(BUILD_DIR)/$(PROG)
 
 CC       = gcc
 CPPFLAGS = -DTARGET_GTK_VERSION=$(GTK_VERSION)
-CFLAGS   = -std=c99 -O2 -Wall -Wextra -Wmissing-prototypes -fwrapv
+CFLAGS   = -std=c99 -O2 -Wall -Wextra -Wmissing-prototypes -fwrapv -Wno-deprecated-declarations
 LDFLAGS  =
 
 ##############################################################################

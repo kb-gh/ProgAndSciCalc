@@ -24,6 +24,11 @@
 #include "calc_conversion.h"
 #include "config.h"
 
+/* useless warning */
+#if __GNUC__ >= 8
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+
 #define MAX_CATEGORIES 20
 #define MAX_VALUES_PER_CATEGORY 15
 

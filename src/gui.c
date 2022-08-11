@@ -19,6 +19,7 @@
 
 
 #include "gui_internal.h"
+#include <ctype.h>
 
 
 /* decimal or hex when in integer mode */
@@ -922,7 +923,7 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
     if (debug_level > 1)
         g_print("key_press keyval %u  state %u\n", event->keyval, event->state);
 
-    switch (event->keyval)
+    switch (tolower(event->keyval))
     {
         case '0':
         case NUM_KEYPAD_0:
@@ -976,13 +977,10 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             return key_click_any_mode(but_grid[bid_9]);
 
         case 'a':
-        case 'A':
             return key_click_if_integer_mode(but_grid[bid_A]);
         case 'b':
-        case 'B':
             return key_click_if_integer_mode(but_grid[bid_B]);
         case 'c':
-        case 'C':
             if (event->state & CTRL_MASK)
             {
                 clipboard_copy();
@@ -990,29 +988,44 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             }
             else
             {
-                return key_click_if_integer_mode(but_grid[bid_C]);
+                return key_click_if_integer_mode(but_grid[bid_C]) ||
+                       key_click_if_float_mode(but_grid[bid_cos]);
             }
         case 'd':
-        case 'D':
-            return key_click_if_integer_mode(but_grid[bid_D]);
+            return key_click_if_integer_mode(but_grid[bid_D]) ||
+                   key_click_if_float_mode(but_grid[bid_onedx]);
         case 'e':
-        case 'E':
             return key_click_if_integer_mode(but_grid[bid_E]) ||
                    key_click_if_float_mode(but_grid[bid_exp]);
         case 'f':
-        case 'F':
             return key_click_if_integer_mode(but_grid[bid_F]) ||
                    key_click_if_float_mode(but_grid[bid_fe]);
 
         case 'h':
-        case 'H':
             /* ignore if ALT modified, avoid confusion with Help menu */
             if (event->state & ALT_MASK)
+            {
                 return FALSE;
+            }
             return key_click_any_mode(but_grid[bid_hist]);
 
+        case 'o':
+            /* ignore if ALT modified, avoid confusion with Options menu */
+            if (event->state & ALT_MASK)
+            {
+                return FALSE;
+            }
+            return key_click_if_float_mode(but_grid[bid_root]);
+
+        case 't':
+            /* ignore if ALT modified, avoid confusion with Constants menu */
+            if (event->state & ALT_MASK)
+            {
+                return FALSE;
+            }
+            return key_click_if_float_mode(but_grid[bid_tan]);
+
         case 'i':
-        case 'I':
             return key_click_if_float_mode(but_grid[bid_inv]);
 
         case '.':
@@ -1020,7 +1033,6 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             return key_click_if_float_mode(but_grid[bid_pnt]);
 
         case 'm':
-        case 'M':
             return key_click_any_mode(but_grid[bid_flip]);
 
         case '+':
@@ -1046,18 +1058,18 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             return key_click_any_mode(but_grid[bid_parr]);
 
         case 'z':
-        case 'Z':
             return key_click_if_integer_mode(but_grid[bid_dec]);
         case 'x':
-        case 'X':
             return key_click_if_integer_mode(but_grid[bid_hex]);
 
         case 'p':
-        case 'P':
+            if (event->state & CTRL_MASK)
+            {
+                return key_click_if_float_mode(but_grid[bid_pi]);
+            }
             return key_click_any_mode(but_grid[bid_pm]);
 
         case 'v':
-        case 'V':
             if (event->state & CTRL_MASK)
             {
                 clipboard_paste_default();
@@ -1069,7 +1081,6 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             }
 
         case 'w':
-        case 'W':
             if (event->state & CTRL_MASK)
             {
                 clipboard_paste_primary();
@@ -1077,14 +1088,13 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             }
             else
             {
-                return FALSE;
+                return key_click_if_float_mode(but_grid[bid_pow]);
             }
 
         case 's':
-        case 'S':
-            return key_click_if_integer_mode(rbut_int_signed[INT_USE_SIGNED_ID]);
+            return key_click_if_integer_mode(rbut_int_signed[INT_USE_SIGNED_ID]) ||
+                   key_click_if_float_mode(but_grid[bid_sin]);
         case 'u':
-        case 'U':
             return key_click_if_integer_mode(rbut_int_signed[INT_USE_UNSIGNED_ID]);
 
         case ESC_KEY:
@@ -1094,8 +1104,50 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
             return key_click_any_mode(but_backspace);
 
         case 'r':
-        case 'R':
             return key_click_any_mode(but_repeat_eq);
+
+        case 'q':
+            if (event->state & CTRL_MASK)
+            {
+                return key_click_if_float_mode(but_grid[bid_sqrt]);
+            }
+            return key_click_any_mode(but_grid[bid_sqr]);
+
+        case 'l':
+            return key_click_if_float_mode(but_grid[bid_log]);
+
+        case 'n':
+            return key_click_if_float_mode(but_grid[bid_ln]) ||
+                   key_click_if_integer_mode(but_grid[bid_com]);
+
+        case 'g':
+            return key_click_if_integer_mode(but_grid[bid_gcd]);
+
+        case '<':
+            if (event->state & CTRL_MASK)
+            {
+                return key_click_if_integer_mode(but_grid[bid_lsftn]);
+            }
+            return key_click_if_integer_mode(but_grid[bid_lsft]);
+
+        case '>':
+            if (event->state & CTRL_MASK)
+            {
+                return key_click_if_integer_mode(but_grid[bid_rsftn]);
+            }
+            return key_click_if_integer_mode(but_grid[bid_rsft]);
+
+        case '%':
+            return key_click_any_mode(but_grid[bid_mod]);
+
+        case '&':
+            return key_click_if_integer_mode(but_grid[bid_and]);
+
+        case '|':
+            return key_click_if_integer_mode(but_grid[bid_or]);
+
+        case '^':
+            return key_click_if_integer_mode(but_grid[bid_xor]);
 
         default:
             return FALSE;
@@ -1406,7 +1458,7 @@ static void gui_recreate(void)
     gtk_widget_show(hbox_status);
 
     /* Add checkbox into hbox_status */
-    chk_repeat_eq = gtk_check_button_new_with_label("Repeated Equals");
+    chk_repeat_eq = gtk_check_button_new_with_label("Repeated Eval");
     g_signal_connect(chk_repeat_eq, "toggled",
                      G_CALLBACK(chk_toggle), NULL);
     gtk_box_pack_start(GTK_BOX(hbox_status), chk_repeat_eq, TRUE, TRUE, 0);

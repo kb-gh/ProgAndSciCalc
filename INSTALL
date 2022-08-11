@@ -6,10 +6,8 @@ The code can be built to use with GTK2 or GTK3, as determined at the top of the 
 leave as GTK_VERSION = 2 for GTK2, change it to GTK_VERSION = 3 for GTK3.
 Then just run 'make' (without the quotes of course) from within the src directory.
 It should build without warnings.
-(Having said that, with newer gcc version I am now getting one harmless -Wstringop-truncation warning.
-Also, when building for GTK2 on a newer setup Xubuntu 20.04, I am now getting lots of
--Wdeprecated-declarations warnings from within the gtk headers. In this case it may be worth
-adding -Wno-deprecated-declarations to CFLAGS in the Makefile to get rid of the noise).
+I have added -Wno-deprecated-declarations to CFLAGS in the Makefile to get rid of endless
+-Wdeprecated-declarations warnings from within the gtk headers when building for GTK2.
 
 The build artefacts, including the executable 'progandscicalc', will be placed under a dir called 'build'
 ie. after running 'make' you will find the executable under
