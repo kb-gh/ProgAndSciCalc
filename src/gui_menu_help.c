@@ -75,7 +75,7 @@ static const char *instructions[] =
 " compared to when unchecked\n"
 "  10 + 2 = 12 = 12 = 12,  3 = 3,  7 = 7\n"
 "  10 + = 10 = 10 = 10 (it discards the dangling +)\n"
-"  10 + 3 * = 13 = 13 = 13 (it discards the dangling *)\n\n"
+"  10 + 3 * = 13 = 13 = 13 (it discards the dangling *)",
 
 "UNARY OPERATORS\n"
 "Unary operators are entered after the argument eg. 100 [log] = 2\n"
