@@ -47,10 +47,6 @@ static GtkWidget *window_constants;
 static int num_categories;
 static int category_selected;
 
-/* To avoid casting int to pointer in callback user data, if it wants a
- * pointer then, OK, it can have a pointer to one of these */
-static int cat_cb[MAX_CATEGORIES];
-static int row_cb[MAX_VALUES_PER_CATEGORY];
 
 typedef struct
 {
@@ -83,7 +79,7 @@ static void cancel_button_clicked(GtkWidget *widget, gpointer data)
 static void entry_enter_pressed(GtkWidget *widget, gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     /* user may have switched mode to integer, the conversion result is only
      * intended to be used in float mode */
@@ -99,7 +95,7 @@ static gboolean entry_button_release(GtkWidget *widget, GdkEventButton *event,
                                     gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     if (event->button == MOUSE_LEFT_BUT)
     {
@@ -162,12 +158,11 @@ static GtkWidget *create_table(int category)
         /* want to return value to calc either by clicking mouse on the value
          * (button-release) or by using keyboard to give focus to the value
          * and press enter (activate) */
-        row_cb[row] = row;
         g_signal_connect(entry, "activate",
-                         G_CALLBACK(entry_enter_pressed), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_enter_pressed), (gpointer)(uintptr_t)row);
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
-                         G_CALLBACK(entry_button_release),(gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_button_release),(gpointer)(uintptr_t)row);
 #if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   1, 2, row, row+1);
@@ -184,10 +179,8 @@ static GtkWidget *create_table(int category)
 static void constants_activate(GtkWidget *widget, gpointer data)
 {
     (void)widget;
-    if (data == NULL)
-        return;
 
-    int category = *(int *)data;
+    int category = (int)(uintptr_t)data;
 
     if (window_constants != NULL)
     {
@@ -216,7 +209,7 @@ static void constants_activate(GtkWidget *widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(window_constants), vbox);
 
     /* Add description label */
-    label = gui_label_new("Click on a value to return that value to the calculator", 0.5, 0.5);
+    label = gui_label_new(gui_click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     separator = gui_hseparator_new();
@@ -257,8 +250,7 @@ void constants_menu_add(GtkWidget *menubar)
         GtkWidget *mi;
         mi = gtk_menu_item_new_with_label("(Empty)");
         gtk_menu_shell_append(GTK_MENU_SHELL(c_menu), mi);
-        g_signal_connect(G_OBJECT(mi), "activate",
-                         G_CALLBACK(constants_activate), NULL);
+        /* no g_signal_connect */
     }
     else
     {
@@ -267,9 +259,8 @@ void constants_menu_add(GtkWidget *menubar)
             GtkWidget *mi;
             mi = gtk_menu_item_new_with_label(cat_table[i]->name);
             gtk_menu_shell_append(GTK_MENU_SHELL(c_menu), mi);
-            cat_cb[i] = i;
             g_signal_connect(G_OBJECT(mi), "activate",
-                             G_CALLBACK(constants_activate), (gpointer)&cat_cb[i]);
+                             G_CALLBACK(constants_activate), (gpointer)(uintptr_t)i);
         }
     }
     gtk_menu_shell_append(GTK_MENU_SHELL(menubar), c_root_mi);

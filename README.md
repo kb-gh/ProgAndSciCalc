@@ -87,7 +87,8 @@ MISCELLANEOUS
 [PI] to enter PI
 [M1S] memory 1 store,  [M1R] memory 1 recall,  [M1+] memory 1 plus
 [M2S] memory 2 store,  [M2R] memory 2 recall,  [M2+] memory 2 plus
-  memories are not saved across program restart
+  Hovering mouse over recall button will show the memory value.
+  Memories are not saved across program restart.
 [RAND] random number (range can be set in Options->Settings)
 [(] [)] there are 4 levels of nested parentheses
   a bracketed expression can only be started after a binary operator, or after [=] or [CLR]
@@ -129,6 +130,7 @@ Most functions (a few are missed out) are mapped to keyboard shortcuts, case ins
    tan                     t
    PI                    ctrl-p
    sqrt                  ctrl-q
+   x!                      !
 
    DEC                     z
    HEX                     x

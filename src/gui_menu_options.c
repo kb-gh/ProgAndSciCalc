@@ -255,25 +255,18 @@ static void replace_zero_button_toggle(GtkWidget *widget, gpointer data)
     replace_zero = active;
 }
 
-static const char *replace_zero_str[] =
-{
-"If you don't like the zero character in the monospace font used for",
-"the main and binary displays, try this low tech solution to replace",
-"zero characetrs with a capital O, it might look nicer."
-};
+static const char *replace_zero_str =
+"If you don't like the zero character in the monospace font used for\n"
+"the main and binary displays, try this low tech solution to replace\n"
+"zero characetrs with a capital O, it might look nicer.";
 
 static void add_replace_zero(GtkWidget *vbox)
 {
     GtkWidget *lbl;
     GtkWidget *button;
-    unsigned i;
 
-    /* long multiline message (I expect there is easier way to do it) */
-    for (i = 0; i < (sizeof replace_zero_str / sizeof replace_zero_str[0]); i++)
-    {
-        lbl = gui_label_new(replace_zero_str[i], 0, 0.5);
-        gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
-    }
+    lbl = gui_label_new(replace_zero_str, 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     replace_zero = config_get_replace_zero_with_o();
 
@@ -381,23 +374,6 @@ static void settings_float_cancel_button_clicked(GtkWidget *widget, gpointer dat
 
     gtk_widget_destroy(window_settings_float);
 }
-
-typedef struct
-{
-    char *name;
-    float_digits_enum id;
-} FLOAT_DIGITS_RB;
-
-static const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
-{
-    { "8",  FLOAT_DIGITS_8_ID },
-    { "10", FLOAT_DIGITS_10_ID },
-    { "12", FLOAT_DIGITS_12_ID },
-    { "14", FLOAT_DIGITS_14_ID },
-    { "16", FLOAT_DIGITS_16_ID },
-    { "18", FLOAT_DIGITS_18_ID },
-    { "20", FLOAT_DIGITS_20_ID },
-};
 
 static void float_digits_rb_toggle(GtkWidget *widget, gpointer data)
 {
@@ -549,26 +525,19 @@ static void sct_button_toggle(GtkWidget *widget, gpointer data)
     sct_round = active;
 }
 
-static const char *sct_round_str[] =
-{
-"With the exception of sin(x) for small x, if the absolute value of a",
-"sin or cos result is close to zero (less than 1E-30), just call it zero.",
-"This could be considered an evil hack and so is optional.",
-"It will also affect tan (calculated as sin/cos)."
-};
+static const char *sct_round_str =
+"With the exception of sin(x) for small x, if the absolute value of a\n"
+"sin or cos result is close to zero (less than 1E-30), just call it zero.\n"
+"This could be considered an evil hack and so is optional.\n"
+"It will also affect tan (calculated as sin/cos).";
 
 static void add_sct_rounding(GtkWidget *vbox)
 {
     GtkWidget *lbl;
     GtkWidget *button;
-    unsigned i;
 
-    /* long multiline message (I expect there is easier way to do it) */
-    for (i = 0; i < (sizeof sct_round_str / sizeof sct_round_str[0]); i++)
-    {
-        lbl = gui_label_new(sct_round_str[i], 0, 0.5);
-        gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
-    }
+    lbl = gui_label_new(sct_round_str, 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(vbox), lbl, FALSE, FALSE, 0);
 
     sct_round = config_get_use_sct_rounding();
 
@@ -675,19 +644,6 @@ static void settings_int_cancel_button_clicked(GtkWidget *widget, gpointer data)
     gtk_widget_destroy(window_settings_int);
 }
 
-typedef struct
-{
-    char *name;
-    calc_width_enum id;
-} INT_WIDTH_RB;
-static const INT_WIDTH_RB int_width_rb[num_calc_widths] =
-{
-    { "8",  calc_width_8 },
-    { "16", calc_width_16 },
-    { "32", calc_width_32 },
-    { "64", calc_width_64 },
-};
-
 static void int_width_rb_toggle(GtkWidget *widget, gpointer data)
 {
     const INT_WIDTH_RB *info = data;
@@ -728,20 +684,6 @@ static void add_integer_width_group(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 5);
 }
 
-
-typedef struct
-{
-    char *name;
-    int id;
-} INT_SIGNED_RB;
-#define INT_USE_SIGNED_ID 0
-#define INT_USE_UNSIGNED_ID 1
-#define NUM_INT_SIGNED_RB 2
-static const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB] =
-{
-    { "signed", INT_USE_SIGNED_ID },
-    { "unsigned", INT_USE_UNSIGNED_ID },
-};
 
 static void signed_unsigned_rb_toggle(GtkWidget *widget, gpointer data)
 {

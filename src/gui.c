@@ -18,8 +18,10 @@
  */
 
 
-#include "gui_internal.h"
 #include <ctype.h>
+#include <inttypes.h>
+#include "gui_internal.h"
+#include "display_print.h"
 
 
 /* decimal or hex when in integer mode */
@@ -134,12 +136,7 @@ typedef enum
 
 
 /* Info for number of float digits radio buttons */
-typedef struct
-{
-    char *name;
-    float_digits_enum id;
-} FLOAT_DIGITS_RB;
-static const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
+const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
 {
     { "8",  FLOAT_DIGITS_8_ID },
     { "10", FLOAT_DIGITS_10_ID },
@@ -149,6 +146,7 @@ static const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID] =
     { "18", FLOAT_DIGITS_18_ID },
     { "20", FLOAT_DIGITS_20_ID },
 };
+
 static int float_digits_from_id(float_digits_enum fd)
 {
     switch (fd)
@@ -170,13 +168,8 @@ static int float_digits_from_id(float_digits_enum fd)
     }
 }
 
-/* Info for integer width and signed/unsigned radio buttons */
-typedef struct
-{
-    char *name;
-    calc_width_enum id;
-} INT_WIDTH_RB;
-static const INT_WIDTH_RB int_width_rb[num_calc_widths] =
+/* Info for integer width radio buttons */
+const INT_WIDTH_RB int_width_rb[num_calc_widths] =
 {
     { "8",  calc_width_8 },
     { "16", calc_width_16 },
@@ -184,15 +177,8 @@ static const INT_WIDTH_RB int_width_rb[num_calc_widths] =
     { "64", calc_width_64 },
 };
 
-typedef struct
-{
-    char *name;
-    int id;
-} INT_SIGNED_RB;
-#define INT_USE_SIGNED_ID 0
-#define INT_USE_UNSIGNED_ID 1
-#define NUM_INT_SIGNED_RB 2
-static const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB] =
+/* Info for integer signed/unsigned radio buttons */
+const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB] =
 {
     { "signed", INT_USE_SIGNED_ID },
     { "unsigned", INT_USE_UNSIGNED_ID },
@@ -219,14 +205,14 @@ static void set_hex_buttons(button_id_enum bid);
 static void set_angle_buttons(button_id_enum bid);
 static void update_status_label(void);
 static void update_mem_label(void);
-static void gui_result_callback(uint64_t ival, stackf_t fval);
+static void update_mem_tooltip(unsigned int m);
+static void gui_result_callback(uint64_t ival, stackf_t fval, calc_op_enum bop_cop);
 static void gui_history_callback(uint64_t ival, stackf_t fval);
 static void gui_set_num_used_parentheses(int n);
 static void gui_warn(const char *msg);
 static void gui_error(const char *msg);
 static void set_inv_button(bool selected);
 static void set_hyp_button(bool selected);
-static void show_pending_bin_op(void);
 static void clipboard_copy(void);
 static void clipboard_paste_default(void);
 static void clipboard_paste_primary(void);
@@ -551,6 +537,14 @@ static void button_click(GtkWidget *widget, gpointer data)
             give_arg_if_pending();
             calc_give_op(binfo->cop);
             update_mem_label();
+            if (binfo->id == bid_ms || binfo->id == bid_mp)
+            {
+                update_mem_tooltip(0);
+            }
+            else if (binfo->id == bid_ms2 || binfo->id == bid_mp2)
+            {
+                update_mem_tooltip(1);
+            }
             break;
 
         case bid_pm:
@@ -757,6 +751,9 @@ static GtkWidget *create_special_button(const button_info *binfo)
     return button;
 }
 
+/* can change this to change the spacing between buttons */
+#define BUTTON_SPACING 2
+
 /* Creates a table of 6 x 3 buttons */
 static GtkWidget *create_6by3_button_table(const button_info binfo[][BT_COLS])
 {
@@ -767,12 +764,12 @@ static GtkWidget *create_6by3_button_table(const button_info binfo[][BT_COLS])
 
 #if TARGET_GTK_VERSION == 2
     table = gtk_table_new(BT_ROWS, BT_COLS, TRUE);
-    gtk_table_set_row_spacings(GTK_TABLE(table), 4);
-    gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+    gtk_table_set_row_spacings(GTK_TABLE(table), BUTTON_SPACING);
+    gtk_table_set_col_spacings(GTK_TABLE(table), BUTTON_SPACING);
 #elif TARGET_GTK_VERSION == 3
     table = gtk_grid_new();
-    gtk_grid_set_row_spacing(GTK_GRID(table), 4);
-    gtk_grid_set_column_spacing(GTK_GRID(table), 4);
+    gtk_grid_set_row_spacing(GTK_GRID(table), BUTTON_SPACING);
+    gtk_grid_set_column_spacing(GTK_GRID(table), BUTTON_SPACING);
     gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
     gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
 #endif
@@ -1148,6 +1145,9 @@ static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
         case '^':
             return key_click_if_integer_mode(but_grid[bid_xor]);
+
+        case '!':
+            return key_click_if_float_mode(but_grid[bid_fact]);
 
         default:
             return FALSE;
@@ -1577,6 +1577,8 @@ static void gui_recreate(void)
 
     update_status_label();
     update_mem_label();
+    update_mem_tooltip(0);
+    update_mem_tooltip(1);
     inv_selected = false;
     if (hyp_selected && but_grid[bid_hyp] != NULL)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(but_grid[bid_hyp]), TRUE);
@@ -1728,13 +1730,43 @@ static void update_mem_label(void)
         gtk_label_set_text(GTK_LABEL(lbl_mem), "");
 }
 
+/* use tooltip so if you mouse over the MR/MR2 buttons it shows the mem value */
+static void update_mem_tooltip(unsigned int m)
+{
+    char buf[100]; // plenty
+    uint64_t ival;
+    stackf_t fval;
+    bool was_unsigned;
+    calc_get_mem(m, &ival, &fval, &was_unsigned);
+
+    /* Tooltip will show the value at the time the value was stored (or last updated if using m+),
+     * which may be different to the value you will now get from the mr if the width/signedness
+     * has changed. */
+
+    if (calc_get_mode() == calc_mode_integer)
+    {
+        if (was_unsigned)
+        {
+            sprintf(buf, "%" PRIu64 "\n(0x%" PRIX64 ")", ival, ival);
+        }
+        else
+        {
+            sprintf(buf, "%" PRId64 "\n(0x%" PRIX64 ")", (int64_t)ival, ival);
+        }
+    }
+    else
+    {
+        /* use 20 digits */
+        display_print_gmode(buf, fval, 20);
+    }
+    GtkWidget *but = m == 0 ? but_grid[bid_mr] : but_grid[bid_mr2];
+    gtk_widget_set_tooltip_text(but, buf);
+}
 
 
 /* Display the bin operator at the top of stack (if any) */
-static void show_pending_bin_op(void)
+static void show_pending_bin_op(calc_op_enum cop)
 {
-    calc_op_enum cop = calc_get_top_of_bop_stack();
-
     const char *new_name;
 
     switch (cop)
@@ -1787,8 +1819,10 @@ static void show_pending_bin_op(void)
 }
 
 
-/* Called by calculator after all operations */
-static void gui_result_callback(uint64_t ival, stackf_t fval)
+/* Called by calculator after all operations. Values returned are
+ * i)  the integer value and the floating point value at the top of stack
+ * ii) the operator at the top of the binary operator stack, or cop_nop if it's empty */
+static void gui_result_callback(uint64_t ival, stackf_t fval, calc_op_enum bop_cop)
 {
     last_float_format = display_get_float_format();
     /* this automatically clears disp exp_entry */
@@ -1796,7 +1830,7 @@ static void gui_result_callback(uint64_t ival, stackf_t fval)
     display_set_float_format(disp_float_gmode);
     gtk_widget_set_sensitive(but_backspace, FALSE);
     arg_pending = false;
-    show_pending_bin_op();
+    show_pending_bin_op(bop_cop);
 }
 
 /* Called by calculator each time a new value is pushed to stack. */

@@ -24,7 +24,7 @@ decContext dfp_context;
 
 static int debug_level;
 
-static void (*result_callback)(uint64_t, stackf_t);
+static void (*result_callback)(uint64_t, stackf_t, calc_op_enum);
 static void (*history_callback)(uint64_t, stackf_t);
 static void (*num_paren_callback)(int);
 static void (*warn_callback)(const char *msg);
@@ -71,8 +71,10 @@ typedef struct
 static stack_el_t stack[STACK_SIZE];
 static int stack_index;
 
+/* support a couple of memory values, using MS MR M+ like on pocket calculator */
 #define NUM_MEMORY 2
 static stack_el_t mem_val[NUM_MEMORY];
+static bool mem_was_unsigned[NUM_MEMORY];
 
 /* to provide the current value to the new mode when switching mode */
 static stack_el_t save_val;
@@ -282,6 +284,20 @@ static const bop_stack_el_t *bop_stack_peek(void)
     }
 }
 
+static calc_op_enum get_top_of_bop_stack(void)
+{
+    if (bop_stack_num_args() > 0)
+    {
+        const bop_stack_el_t *bop_info = bop_stack_peek();
+        return bop_info->cop;
+    }
+    else
+    {
+        return cop_nop;
+    }
+}
+
+
 /* With decimal floating point, value zero can have a varying number
  * of digits (as long as all zero I presume) and a varying exponent.
  * This function turns any zero into a 'simple' zero, used before
@@ -295,12 +311,15 @@ static void dfp_normalise_zero(stackf_t *arg)
     }
 }
 
-static void request_display_update(const stack_el_t *s)
+static void request_display_update(void)
 {
     calc_info("request_update");
 
+    const stack_el_t *s = stack_peek();
+    calc_op_enum cop = get_top_of_bop_stack();
+
     if (result_callback)
-        result_callback(s->ival, s->fval);
+        result_callback(s->ival, s->fval, cop);
     else
         calc_error("result callback NULL");
 }
@@ -355,7 +374,7 @@ static void unary_op(uint64_t (*fni)(uint64_t),
         dfp_normalise_zero(&fresult);
     }
     stack_push(iresult, fresult);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 
@@ -478,7 +497,7 @@ static void bin_op_common(calc_op_enum cop,
     process_bin_ops(priority);
     /* Then store the new bin op */
     bop_stack_push(cop, fni, fnf, priority);
-    request_display_update(stack_peek());
+    request_display_update();
     paren_allowed = true;
 
     /* priority tests
@@ -520,7 +539,7 @@ static void op_equals(void)
     if (bop_stack_num_args() > 0)
     {
         process_bin_ops(PRIORITY_MIN);
-        request_display_update(stack_peek());
+        request_display_update();
     }
     else if (bin_op_was_entered && allow_repeated_equals)
     {
@@ -563,7 +582,7 @@ static void op_equals(void)
         stack[0].ival = iresult;
         stack[0].fval = fresult;
         history_update(stack_peek());
-        request_display_update(&stack[0]);
+        request_display_update();
     }
     else
     {
@@ -579,7 +598,7 @@ static void op_equals(void)
          *  i) float mode, enter eg. 1.23e+04, then enter =, display should
          *      update with 12300
          */
-        request_display_update(stack_peek());
+        request_display_update();
     }
     paren_allowed = true;
     if (num_parentheses != 0)
@@ -647,7 +666,7 @@ static void parentheses_left(void)
         new_arg(0, dzero);
         /* need to reset paren_allowed */
         paren_allowed = true;
-        request_display_update(stack_peek());
+        request_display_update();
         num_parentheses++;
         report_num_used_parentheses();
     }
@@ -659,7 +678,7 @@ static void parentheses_right(void)
     {
         /* like equals but with priority as the min priority for the level */
         process_bin_ops(num_parentheses * PARENTHESES_PRIORITY_RAISE);
-        request_display_update(stack_peek());
+        request_display_update();
         num_parentheses--;
         report_num_used_parentheses();
         print_stack();
@@ -681,18 +700,19 @@ static void memory_store(int m)
              * rather than masked off to the width. */
             mem_val[m].ival = calc_util_get_signed(mem_val[m].ival, integer_width);
         }
+        mem_was_unsigned[m] = use_unsigned;
     }
     else
     {
         mem_val[m].fval = s->fval;
     }
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 static void memory_recall(int m)
 {
     new_arg(mem_val[m].ival, mem_val[m].fval);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 static void memory_plus(int m)
@@ -715,6 +735,7 @@ static void memory_plus(int m)
             /* see comment in memory_store */
             mem_val[m].ival = calc_util_get_signed(mem_val[m].ival, integer_width);
         }
+        mem_was_unsigned[m] = use_unsigned;
     }
     else
     {
@@ -735,7 +756,7 @@ static void enter_pi(void)
     stackf_t fval;
     dfp_from_string(&fval, "3.1415926535897932384626433832795029", &dfp_context);
     new_arg(0, fval);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 #if 0
@@ -747,7 +768,7 @@ static void enter_euler(void)
     stackf_t fval;
     dfp_from_string(&fval, "2.7182818284590452353602874713526625", &dfp_context);
     new_arg(0, fval);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 #endif
 
@@ -774,7 +795,7 @@ static void enter_rand(void)
     stackf_t fval;
     dfp_from_string(&fval, buf, &dfp_context);
     new_arg(0, fval);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 static void enter_int_min(void)
@@ -800,7 +821,7 @@ static void enter_int_min(void)
     stackf_t fval;
     dfp_zero(&fval);
     new_arg(ival, fval);
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
 void calc_give_op(calc_op_enum cop)
@@ -808,7 +829,7 @@ void calc_give_op(calc_op_enum cop)
     switch (cop)
     {
         case cop_peek:
-            request_display_update(stack_peek());
+            request_display_update();
             break;
 
         case cop_eq:
@@ -1167,10 +1188,10 @@ void calc_clear(void)
         dfp_zero(&dzero);
         stack_push(0, dzero);
     }
-    request_display_update(stack_peek());
+    request_display_update();
 }
 
-void calc_set_result_callback(void (*fn)(uint64_t, stackf_t))
+void calc_set_result_callback(void (*fn)(uint64_t, stackf_t, calc_op_enum))
 {
     result_callback = fn;
 }
@@ -1208,19 +1229,6 @@ void calc_set_error_callback(void (*fn)(const char *msg))
     error_callback = fn;
 }
 
-calc_op_enum calc_get_top_of_bop_stack(void)
-{
-    if (bop_stack_num_args() > 0)
-    {
-        const bop_stack_el_t *bop_info = bop_stack_peek();
-        return bop_info->cop;
-    }
-    else
-    {
-        return cop_nop;
-    }
-}
-
 void calc_set_random_range(int range)
 {
     random_range = range;
@@ -1249,6 +1257,23 @@ bool calc_get_mem_non_zero(unsigned int m)
         return mem_val[m].ival != 0;
     else
         return !dfp_is_zero(&mem_val[m].fval);
+}
+
+void calc_get_mem(unsigned int m, uint64_t *ival, stackf_t *fval, bool *was_unsigned)
+{
+    if (m >= NUM_MEMORY)
+    {
+        *ival = 0;
+        dfp_zero(fval);
+        *was_unsigned = false;
+    }
+    else
+    {
+        *ival = mem_val[m].ival;
+        *fval = mem_val[m].fval;
+        dfp_normalise_zero(fval);
+        *was_unsigned = mem_was_unsigned[m];
+    }
 }
 
 stackf_t calc_get_fval_top_of_stack(void)
@@ -1356,5 +1381,5 @@ void calc_binary_bit_xor(uint64_t bitmask)
     iresult = bin_iop_xor(arg.ival, bitmask);
     dfp_zero(&fresult);
     stack_push(iresult, fresult);
-    request_display_update(stack_peek());
+    request_display_update();
 }

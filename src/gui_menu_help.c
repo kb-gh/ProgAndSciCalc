@@ -20,7 +20,7 @@
 
 #include "gui_internal.h"
 
-#define VERSION "3.0"
+#define VERSION "3.1"
 
 extern GtkWidget *window_main;
 
@@ -103,7 +103,8 @@ static const char *instructions[] =
 "[PI] to enter PI\n"
 "[M1S] memory 1 store,  [M1R] memory 1 recall,  [M1+] memory 1 plus\n"
 "[M2S] memory 2 store,  [M2R] memory 2 recall,  [M2+] memory 2 plus\n"
-"  memories are not saved across program restart\n"
+"  Hovering mouse over recall button will show the memory value.\n"
+"  Memories are not saved across program restart.\n"
 "[RAND] random number (range can be set in Options->Settings)\n"
 "[(] [)] there are 4 levels of nested parentheses\n"
 "  a bracketed expression can only be started after a binary operator, or after [=] or [CLR]\n"
@@ -143,7 +144,8 @@ static const char *instructions[] =
 "   cos                     c\n"
 "   tan                     t\n"
 "   PI                    ctrl-p\n"
-"   sqrt                  ctrl-q\n\n"
+"   sqrt                  ctrl-q\n"
+"   x!                      !\n\n"
 
 "   DEC                     z\n"
 "   HEX                     x\n"

@@ -35,6 +35,37 @@
 #include "config.h"
 
 
+/* Info for number of float digits radio buttons */
+typedef struct
+{
+    char *name;
+    float_digits_enum id;
+} FLOAT_DIGITS_RB;
+extern const FLOAT_DIGITS_RB float_digits_rb[NUM_FLOAT_DIGITS_ID];
+
+
+/* Info for integer width radio buttons */
+typedef struct
+{
+    char *name;
+    calc_width_enum id;
+} INT_WIDTH_RB;
+extern const INT_WIDTH_RB int_width_rb[num_calc_widths];
+
+/* Info for integer signed/unsigned radio buttons */
+typedef struct
+{
+    char *name;
+    int id;
+} INT_SIGNED_RB;
+#define INT_USE_SIGNED_ID 0
+#define INT_USE_UNSIGNED_ID 1
+#define NUM_INT_SIGNED_RB 2
+extern const INT_SIGNED_RB int_signed_rb[NUM_INT_SIGNED_RB];
+
+/* Message used by various gui files */
+extern const char *gui_click_val_msg;
+
 GtkWidget *create_menu(void);
 
 void options_menu_add(GtkWidget *menubar);

@@ -42,11 +42,8 @@ typedef struct
 static hist_int_t history_ival[HISTORY_MAX_ITEMS];
 static hist_int_t history_ival_copy[HISTORY_MAX_ITEMS];
 
-/* To avoid casting int to pointer in callback user data, if it wants a
- * pointer then, OK, it can have a pointer to one of these */
-static int row_cb[HISTORY_MAX_ITEMS];
 
-static const char *click_val_msg = "Click on a value to return that value to the calculator";
+const char *gui_click_val_msg = "Click on a value to return that value to the calculator";
 
 
 /****************************************************************************
@@ -73,7 +70,7 @@ static void cancel_button_clicked_int(GtkWidget *widget, gpointer data)
 static void entry_enter_pressed_int(GtkWidget *widget, gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     /* user may have switched mode to float, the result is only
      * intended to be used in integer mode */
@@ -92,7 +89,7 @@ static gboolean entry_button_release_int(GtkWidget *widget,
                                          gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     if (event->button == MOUSE_LEFT_BUT)
     {
@@ -157,10 +154,10 @@ static GtkWidget *create_table_int(void)
          * (button-release) or by using keyboard to give focus to the value
          * and press enter (activate) */
         g_signal_connect(entry, "activate",
-                         G_CALLBACK(entry_enter_pressed_int), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_enter_pressed_int), (gpointer)(uintptr_t)row);
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
-                         G_CALLBACK(entry_button_release_int), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_button_release_int), (gpointer)(uintptr_t)row);
 #if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   0, 1, row, row+1);
@@ -235,7 +232,7 @@ static void history_open_int(void)
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
     /* Add description label */
-    label = gui_label_new(click_val_msg, 0.5, 0.5);
+    label = gui_label_new(gui_click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     separator = gui_hseparator_new();
@@ -332,7 +329,7 @@ static void cancel_button_clicked_float(GtkWidget *widget, gpointer data)
 static void entry_enter_pressed_float(GtkWidget *widget, gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     /* user may have switched mode to integer, the result is only
      * intended to be used in float mode */
@@ -349,7 +346,7 @@ static gboolean entry_button_release_float(GtkWidget *widget,
                                            gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     if (event->button == MOUSE_LEFT_BUT)
     {
@@ -405,10 +402,10 @@ static GtkWidget *create_table_float(void)
          * (button-release) or by using keyboard to give focus to the value
          * and press enter (activate) */
         g_signal_connect(entry, "activate",
-                         G_CALLBACK(entry_enter_pressed_float), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_enter_pressed_float), (gpointer)(uintptr_t)row);
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
-                         G_CALLBACK(entry_button_release_float), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_button_release_float), (gpointer)(uintptr_t)row);
 #if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   0, 1, row, row+1);
@@ -483,7 +480,7 @@ static void history_open_float(void)
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
     /* Add description label */
-    label = gui_label_new(click_val_msg, 0.5, 0.5);
+    label = gui_label_new(gui_click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     separator = gui_hseparator_new();
@@ -550,7 +547,6 @@ void gui_history_init(void)
 {
     for(int i = 0; i < HISTORY_MAX_ITEMS; i++)
     {
-        row_cb[i] = i;
         dfp_zero(&history_fval[i]);
     }
 }

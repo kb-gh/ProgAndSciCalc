@@ -54,9 +54,6 @@ static const UCV_INFO ucv_info[num_ucv] =
 #define MAX_CONVERSION_ROWS 20
 /* Keep track of which value entry is on which row for radio button callback */
 static GtkWidget *value_entries[MAX_CONVERSION_ROWS];
-/* To avoid casting int to pointer in callback user data, if it wants a
- * pointer then, OK, it can have a pointer to one of these */
-static int row_cb[MAX_CONVERSION_ROWS];
 
 /* store the num_rows for the category currently selected */
 static int num_rows;
@@ -128,7 +125,7 @@ static void update_all_entry_values(void)
 
 static void rb_toggle(GtkWidget *widget, gpointer data)
 {
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     if (active)
@@ -150,7 +147,7 @@ static void rb_toggle(GtkWidget *widget, gpointer data)
 static void entry_enter_pressed(GtkWidget *widget, gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     /* user may have switched mode to integer, the conversion result is only
      * intended to be used in float mode */
@@ -167,7 +164,7 @@ static gboolean entry_button_release(GtkWidget *widget, GdkEventButton *event,
                                     gpointer data)
 {
     (void)widget;
-    int row = *(int *)data;
+    int row = (int)(uintptr_t)data;
 
     if (event->button == MOUSE_LEFT_BUT)
     {
@@ -250,12 +247,11 @@ static GtkWidget *create_table(ucv_enum category)
         /* want to return value to calc either by clicking mouse on the value
          * (button-release) or by using keyboard to give focus to the value
          * and press enter (activate) */
-        row_cb[row] = row;
         g_signal_connect(entry, "activate",
-                         G_CALLBACK(entry_enter_pressed), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_enter_pressed), (gpointer)(uintptr_t)row);
         gtk_widget_add_events(entry, GDK_BUTTON_RELEASE_MASK);
         g_signal_connect(entry, "button-release-event",
-                         G_CALLBACK(entry_button_release), (gpointer)&row_cb[row]);
+                         G_CALLBACK(entry_button_release), (gpointer)(uintptr_t)row);
 #if TARGET_GTK_VERSION == 2
         gtk_table_attach_defaults(GTK_TABLE(table), entry,
                                   1, 2, row, row+1);
@@ -269,7 +265,7 @@ static GtkWidget *create_table(ucv_enum category)
 
         /* connect radio button toggled signal */
         g_signal_connect(button, "toggled",
-                         G_CALLBACK(rb_toggle), (gpointer)&row_cb[row]);
+                         G_CALLBACK(rb_toggle), (gpointer)(uintptr_t)row);
         if (row == 0)
         {
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
@@ -326,7 +322,7 @@ static void ucv_activate(GtkWidget *widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(window_conversion), vbox);
 
     /* Add description label */
-    label = gui_label_new("Click on a value to return that value to the calculator", 0.5, 0.5);
+    label = gui_label_new(gui_click_val_msg, 0.5, 0.5);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     separator = gui_hseparator_new();

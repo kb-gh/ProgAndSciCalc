@@ -155,8 +155,11 @@ calc_angle_enum calc_get_angle(void);
 void calc_set_repeated_equals(bool enable);
 bool calc_get_repeated_equals(void);
 
-/* Set callback that calculator uses to return result to gui. */
-void calc_set_result_callback(void (*fn)(uint64_t, stackf_t));
+/* Set callback that calculator uses to return result to gui after any
+ * operation. It returns
+ * i)  the integer value and the floating point value at the top of stack
+ * ii) the operator at the top of the binary operator stack, or cop_nop if it's empty */
+void calc_set_result_callback(void (*fn)(uint64_t, stackf_t, calc_op_enum));
 
 /* Set callback that calculator uses to return value that you might
  * want to add to history (optional). */
@@ -173,8 +176,6 @@ void calc_set_get_best_integer_callback(bool (*fn)(uint64_t *, bool *));
 void calc_set_warn_callback(void (*fn)(const char *msg));
 void calc_set_error_callback(void (*fn)(const char *msg));
 
-/* return the binary op at the top of the bop stack, or cop_nop if empty */
-calc_op_enum calc_get_top_of_bop_stack(void);
 
 /* range == 0 means 0 <= r < 1
  * range > 0 means  1 <= r <= range (r will be integer) */
@@ -186,6 +187,9 @@ bool calc_get_use_sct_rounding(void);
 
 /* Is there a non zero value stored in memory m */
 bool calc_get_mem_non_zero(unsigned int m);
+
+/* Get the memory values for memory m */
+void calc_get_mem(unsigned int m, uint64_t *ival, stackf_t *fval, bool *was_unsigned);
 
 /* select signed or unsigned for integer mode */
 void calc_set_use_unsigned(bool en);
