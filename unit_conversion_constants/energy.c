@@ -91,9 +91,9 @@ int main(void)
     decQuadDivide(&res, &a, &b, &dfp_context);
     decQuadToString(&res, buf);
     printf("    { \"%s\", \t\t\"%s\" },\n", "kcal", buf);
-    /* BTU  1.0 / 1055.06 */
+    /* BTU  1.0 / 1055.05585262 */
     decQuadFromString(&a, "1", &dfp_context);
-    decQuadFromString(&b, "1055.06", &dfp_context);
+    decQuadFromString(&b, "1055.05585262", &dfp_context);
     decQuadDivide(&res, &a, &b, &dfp_context);
     decQuadToString(&res, buf);
     printf("    { \"%s\", \t\t\"%s\" },\n", "BTU", buf);

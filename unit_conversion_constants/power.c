@@ -31,7 +31,8 @@ static const name_val_t power_name_val[] =
     { "W",          "nnn" }, etc.
     { "kW",
     { "HP (imp)",
-    { "HP (metric)",   "zzz" },
+    { "HP (metric)",
+    { "BTU / hour",     "zzz" },
 };
 */
 
@@ -81,6 +82,14 @@ int main(void)
     decQuadDivide(&res, &a, &b, &dfp_context);
     decQuadToString(&res, buf);
     printf("    { \"%s\", \t\t\"%s\" },\n", "HP (metric)", buf);
+
+    /* 1W is 1 / 1055.05585262 BTU per sec
+     *  = 3600 / 1055.05585262 BTU per hour */
+    decQuadFromString(&a, "3600", &dfp_context);
+    decQuadFromString(&b, "1055.05585262", &dfp_context);
+    decQuadDivide(&res, &a, &b, &dfp_context);
+    decQuadToString(&res, buf);
+    printf("    { \"%s\", \t\t\"%s\" },\n", "BTU / hour", buf);
 
     printf("};\n");
     return 0;
